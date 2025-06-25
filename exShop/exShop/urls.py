@@ -6,8 +6,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # '/main/' で始まるURLは main.urls.py を参照する
-    path('main/', include('main.urls')),
+    # '' で始まるURLは main.urls.py を参照する
+    path('', include('main.urls')),
     
     # '/accounts/' で始まるURLは accounts.urls.py を参照する
     path('accounts/', include('accounts.urls')),

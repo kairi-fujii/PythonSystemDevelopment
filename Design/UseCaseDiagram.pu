@@ -1,0 +1,103 @@
+@startuml ユースケース図
+
+' === デザイン調整 (skinparam) ===
+skinparam {
+    BackgroundColor #FFFFFF
+    ArrowColor #505050
+    ActorBorderColor #333333
+    ActorBackgroundColor #EEEEEE
+    PackageBorderColor #505050
+    PackageBackgroundColor #F8F8F8
+    UsecaseBorderColor #006699
+    UsecaseBackgroundColor #E6F7FF
+    NoteBorderColor #F0AD4E
+    NoteBackgroundColor #FFF8E1
+    DefaultFontName "Yu Gothic UI"
+    DefaultFontSize 12
+}
+
+' === レイアウト方向を左から右へ明確に指定 ===
+left to right direction
+
+' === アクター定義 (左側に配置) ===
+package "アクター" {
+  actor "ゲスト" as Guest
+  actor "会員" as Member
+  actor "管理者" as Admin
+}
+' 汎化関係
+Guest <|-- Member
+Member <|-- Admin
+
+' === 機能パッケージ (右側に配置) ===
+rectangle "ECフリマシステム" {
+
+    ' === 全体への注釈: この図の読み方 ===
+    note as N1
+      <b>【この図の読み方】</b>
+      アクターから<b>パッケージ（枠）</b>に線が引かれている場合、
+      そのアクターは<u>パッケージ内の全ての機能</u>を利用できることを意味します。
+      特定の機能にのみ線が引かれている場合は、その機能しか利用できません。
+      
+      また、アクター間の矢印（例: ゲスト <|-- 会員）は汎化関係を示し、
+      下位のアクターが上位の機能を全て継承します。
+    end note
+
+    package "accounts (認証・ユーザー管理)" as PkgAccounts {
+        usecase "アカウントを新規登録する" as UC_Register
+        usecase "システムにログインする" as UC_Login
+        usecase "システムからログアウトする" as UC_Logout
+        usecase "自身のプロフィールを編集する" as UC_EditProfile
+    }
+
+    package "main (フリマコア機能)" {
+    
+        rectangle "商品関連機能" as PkgProduct {
+            usecase "商品を検索する" as UC_Search
+            usecase "商品詳細を閲覧する" as UC_ViewDetail
+            usecase "商品を出品する" as UC_ListProduct
+            usecase "自身の出品を管理する" as UC_ManageMyProducts
+        }
+
+        rectangle "取引関連機能" as PkgTransaction {
+            usecase "商品を購入する" as UC_Purchase
+            usecase "購入履歴を閲覧する" as UC_ViewPurchaseHistory
+            usecase "発送を通知する" as UC_NotifyShipping
+            usecase "受け取りを評価する" as UC_Evaluate
+        }
+
+        rectangle "インタラクション機能" as PkgInteraction {
+            usecase "お気に入り登録／閲覧" as UC_Favorite
+            usecase "質問コメントを送信する" as UC_Comment
+            usecase "取引メッセージを交換する" as UC_SendMessage
+            usecase "通知一覧を閲覧する" as UC_CheckNotifications
+        }
+    }
+
+    package "admin (Django管理サイト)" as PkgAdmin {
+        usecase "全ユーザーを管理する" as UC_AdminManageUsers
+        usecase "全商品を管理する" as UC_AdminManageProducts
+        usecase "全取引を閲覧する" as UC_AdminViewTransactions
+        usecase "カテゴリをマスタ管理する" as UC_AdminManageCategories
+    }
+}
+
+
+' --- アクターとユースケースの関連 (色と太さで重み付け) ---
+
+' ■ ゲストの権限 (グレー / 細い)
+Guest -[#808080,thickness=1]-> UC_Register
+Guest -[#808080,thickness=1]-> UC_Login
+Guest -[#808080,thickness=1]-> UC_Search
+Guest -[#808080,thickness=1]-> UC_ViewDetail
+
+' ■ 会員の権限 (青 / 中くらい)
+Member -[#006699,thickness=2]-> PkgAccounts
+Member -[#006699,thickness=2]-> PkgProduct
+Member -[#006699,thickness=2]-> PkgTransaction
+Member -[#006699,thickness=2]-> PkgInteraction
+
+' ■ 管理者の権限 (赤 / 太い)
+Admin -[#B80000,thickness=3]-> PkgAdmin
+
+@enduml
