@@ -1,0 +1,103 @@
+##################################################
+# 
+# Django開発準備（共通）
+# 
+##################################################
+
+# 仮想環境作成
+python -m venv venv
+
+# 仮想環境に入る
+.\venv\Scripts\Activate.ps1
+
+# appのinstall
+pip install -r requirements.txt
+
+# プロジェクトの作成
+django-admin startproject <プロジェクト名>
+
+# <プロジェクト名>環境に入る
+cd <プロジェクト名>
+
+# アプリ作成
+python manage.py startapp main
+
+#===========================================================
+#==== ファイルの修正 Begin
+
+----- アプリの登録：<プロジェクト名>/settings.py -----------
+INSTALLED_APPS = [
+	'main.apps.MainConfig',
+]
+
+
+----- タイムゾーンの変更：<プロジェクト名>/settings.py -----------
+# 使用言語とタイムゾーンを日本仕様にする
+LANGUAGE_CODE = 'ja'
+TIME_ZONE = 'Asia/Tokyo'
+
+
+----- ルーティングの設定：main/urls.py (新規作成) ----------
+from django.urls import path
+from . import views
+
+app_name = 'main' # アプリケーションの名前空間
+
+urlpatterns = [
+	# ここにviewを実行するURLを追加していく
+	# 例: path('/', views.index_view, name='index'),
+	# 例: path('product_list/', views.product_list_view, name='product_list'),
+]
+
+
+-----ルーティング設定：<プロジェクト名> /urls.py -----------
+from django.urls import path, include
+
+urlpatterns = [
+
+	# '/main/' で始まるURLは main.urls.py を参照する
+	path('main/', include('main.urls')),
+	]
+
+
+##################################################
+# 
+# Django 開発準備（Project依存）
+# 
+##################################################
+
+# accountsアプリ作成（ログイン周りのアカウント管理画面）
+python manage.py startapp accounts
+
+
+#===========================================================
+#==== ファイルの修正 Begin
+
+----- アプリの登録：<プロジェクト名>/settings.py -----------
+INSTALLED_APPS = [
+	'accounts.apps.AccountsConfig',
+]
+
+
+----- ルーティングの設定：main/urls.py (新規作成) ----------
+from django.urls import path
+from . import views
+
+app_name = 'accounts' # アプリケーションの名前空間
+
+urlpatterns = [
+	# ここにviewを実行するURLを追加していく
+	# 例: path('signup/', views.signup_view, name='signup'),
+	# 例: path('login/', views.login_view, name='login'),
+]
+
+
+-----ルーティング設定：<プロジェクト名> /urls.py -----------
+urlpatterns = [
+
+	# '/accounts/' で始まるURLは accounts.urls.py を参照する
+	path('accounts/', include('accounts.urls')),
+	]
+
+
+
