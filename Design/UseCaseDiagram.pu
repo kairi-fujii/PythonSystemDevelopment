@@ -50,7 +50,7 @@ rectangle "ECフリマシステム" {
         usecase "自身のプロフィールを編集する" as UC_EditProfile
     }
 
-    package "main (フリマコア機能)" {
+    package "main (フリマ機能)" {
     
         rectangle "商品関連機能" as PkgProduct {
             usecase "商品を検索する" as UC_Search

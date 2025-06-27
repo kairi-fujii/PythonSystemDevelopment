@@ -1,0 +1,160 @@
+@startuml Final_Japanese_Model_Refined_Roles
+
+' === デザイン調整 (skinparam) ===
+skinparam {
+    BackgroundColor #FFFFFF, ArrowColor #505050, shadowing false,
+    ClassAttributeIconSize 0, ClassBorderColor #333333, ClassBackgroundColor #FFFFF0,
+}
+
+' === エンティティ定義 (実装の境界線を排除) ===
+
+abstract class "抽象ユーザー" as AbstractUser
+
+class 役割 {
+    ' idは自動生成のため省略
+    + 名前 : CharField
+    + 表示名 : CharField
+}
+
+class ユーザー {
+    ' idは自動生成のため省略
+    + 役割 : ForeignKey
+    + 保有ポイント : PositiveIntegerField
+    + プロフィール画像 : ImageField
+    + 自己紹介文 : TextField
+}
+
+class カテゴリ {
+    ' id, created_atは定型的なため省略
+    + 名前 : CharField
+}
+
+class 商品状態 {
+    ' idは自動生成のため省略
+    + 名前 : CharField
+    + 説明 : TextField
+}
+
+class 販売状況 {
+    ' idは自動生成のため省略
+    + 名前 : CharField
+    + 表示名 : CharField
+}
+
+class 取引状況 {
+    ' idは自動生成のため省略
+    + 名前 : CharField
+    + 表示名 : CharField
+}
+
+class 通知種別 {
+    ' idは自動生成のため省略
+    + 名前 : CharField
+    + 表示名 : CharField
+}
+
+class 商品 {
+    ' id, created_atは定型的なため省略
+    + 出品者 : ForeignKey
+    + カテゴリ : ForeignKey
+    + 商品状態 : ForeignKey
+    + 販売状況 : ForeignKey
+    + 名前 : CharField
+    + 説明 : TextField
+    + 価格 : PositiveIntegerField
+}
+
+class 商品画像 {
+    ' idは自動生成のため省略
+    + 商品 : ForeignKey
+    + 画像 : ImageField
+}
+
+class 取引 {
+    ' id, created_atは定型的なため省略
+    + 商品 : OneToOneField
+    + 購入者 : ForeignKey
+    + 取引状況 : ForeignKey
+    + 購入価格 : PositiveIntegerField
+    + 手数料 : PositiveIntegerField
+    + 出品者利益 : PositiveIntegerField
+}
+
+class コメント {
+    ' id, created_atは定型的なため省略
+    + 投稿者 : ForeignKey
+    + 商品 : ForeignKey
+    + 内容 : TextField
+}
+
+class お気に入り {
+    ' id, created_atは定型的なため省略
+    + ユーザー : ForeignKey
+    + 商品 : ForeignKey
+    --
+    ' Meta: unique_together = ("user", "product")
+}
+
+class メッセージ {
+    ' id, created_atは定型的なため省略
+    + 取引 : ForeignKey
+    + 送信者 : ForeignKey
+    + 内容 : TextField
+    + 既読フラグ : BooleanField
+}
+
+class 評価 {
+    ' id, created_atは定型的なため省略
+    + 取引 : ForeignKey
+    + 評価者 : ForeignKey
+    + 被評価者 : ForeignKey
+    + 評価点 : PositiveSmallIntegerField
+    + コメント : TextField
+}
+
+class 通知 {
+    ' id, created_atは定型的なため省略
+    + 受信者 : ForeignKey
+    + 通知種別 : ForeignKey
+    + 内容 : CharField
+    + 関連URL : URLField
+    + 既読フラグ : BooleanField
+}
+
+
+' --- モデル間のリレーションを定義 ---
+
+AbstractUser <|-- ユーザー
+
+' ■ accounts内の関連
+役割 "1" -[#008000,thickness=1]- "0..*" ユーザー
+
+' ■ 主要な関連
+ユーザー "1" -[#B80000,thickness=3]- "*" 商品 : 出品者
+ユーザー "1" -[#B80000,thickness=3]- "*" 取引 : 購入者
+商品 "1" -[#B80000,thickness=3]- "0..1" 取引
+
+' ■ 従属的な関連
+ユーザー "1" -[#006699,thickness=2]- "*" コメント : 投稿者
+ユーザー "1" -[#006699,thickness=2]- "*" お気に入り
+ユーザー "1" -[#006699,thickness=2]- "*" メッセージ : 送信者
+' 評価者と被評価者は必須
+ユーザー "1" -[#006699,thickness=2]- "*" 評価 : 評価者
+ユーザー "1" -[#006699,thickness=2]- "*" 評価 : 被評価者
+ユーザー "1" -[#006699,thickness=2]- "*" 通知 : 受信者
+
+商品 "1" -[#006699,thickness=2]- "*" コメント
+商品 "1" -[#006699,thickness=2]- "*" お気に入り
+商品 "1" -[#006699,thickness=2]- "0..*" 商品画像
+
+取引 "1" -[#006699,thickness=2]- "*" メッセージ
+取引 "1" -[#006699,thickness=2]- "*" 評価
+
+' ■ マスタ参照の関連
+カテゴリ "1" -[#008000,thickness=1]- "0..*" 商品
+商品状態 "1" -[#008000,thickness=1]- "0..*" 商品
+販売状況 "1" -[#008000,thickness=1]- "0..*" 商品
+取引状況 "1" -[#008000,thickness=1]- "0..*" 取引
+通知種別 "1" -[#008000,thickness=1]- "0..*" 通知
+
+@enduml

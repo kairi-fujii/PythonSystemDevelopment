@@ -1,0 +1,169 @@
+@startuml Django_Physical_Model_Final_Refined
+
+' === デザイン調整 (skinparam) ===
+' これらは図の見た目を整える基本的な設定です。
+' 万が一、お使いの環境でエラーが出る場合は、このセクションを削除しても図の構造は変わりません。
+skinparam {
+    BackgroundColor #FFFFFF
+    ArrowColor #505050
+    shadowing false
+    ClassAttributeIconSize 0
+    ClassBorderColor #333333
+    ClassBackgroundColor #FFFFF0
+    PackageBorderColor #505050
+    PackageBackgroundColor #FAFAFA
+}
+
+' ===================================
+' === accounts アプリケーション ===
+' ===================================
+package "accounts" {
+    abstract class AbstractUser
+    
+    class Role {
+        ' idは自動生成のため省略
+        + name : CharField
+        + display_name : CharField
+    }
+
+    class CustomUser {
+        ' idは自動生成のため省略
+        + role : ForeignKey
+        + points : PositiveIntegerField
+        + profile_image : ImageField
+        + introduction : TextField
+    }
+
+    ' --- accounts内のリレーション定義 ---
+    AbstractUser <|-- CustomUser
+    Role "1" -[#008000,thickness=1]- "0..*" CustomUser
+}
+
+' ===================================
+' === main アプリケーション ===
+' ===================================
+package "main" {
+    class Category {
+        ' idは自動生成のため省略
+        + name : CharField
+    }
+    
+    class Condition {
+        ' idは自動生成のため省略
+        + name : CharField
+        + description : TextField
+    }
+
+    class Status {
+        ' idは自動生成のため省略
+        + name : CharField
+    }
+
+    class TransactionStatus {
+        ' idは自動生成のため省略
+        + name : CharField
+    }
+
+    class NtfType {
+        ' idは自動生成のため省略
+        + name : CharField
+    }
+
+    class Product {
+        ' id, created_atは定型的なため省略
+        + seller : ForeignKey
+        + category : ForeignKey
+        + condition : ForeignKey
+        + status : ForeignKey
+        + name : CharField
+        + description : TextField
+        + price : PositiveIntegerField
+    }
+    
+    class ProductImage {
+        ' idは自動生成のため省略
+        + product : ForeignKey
+        + image : ImageField
+    }
+    
+    class Transaction {
+        ' id, created_atは定型的なため省略
+        + product : OneToOneField
+        + buyer : ForeignKey
+        + status : ForeignKey
+        + purchase_price : PositiveIntegerField
+        + platform_fee : PositiveIntegerField
+        + seller_income : PositiveIntegerField
+    }
+    
+    class Comment {
+        ' id, created_atは定型的なため省略
+        + user : ForeignKey
+        + product : ForeignKey
+        + content : TextField
+    }
+
+    class Favorite {
+        ' id, created_atは定型的なため省略
+        + user : ForeignKey
+        + product : ForeignKey
+        --
+        ' Meta: unique_together = ("user", "product")
+    }
+
+    class Message {
+        ' id, created_atは定型的なため省略
+        + transaction : ForeignKey
+        + sender : ForeignKey
+        + content : TextField
+        + is_read : BooleanField
+    }
+    
+    class Review {
+        ' id, created_atは定型的なため省略
+        + transaction : ForeignKey
+        + reviewer : ForeignKey
+        + reviewee : ForeignKey
+        + rating : PositiveSmallIntegerField
+        + comment : TextField
+    }
+    
+    class Notification {
+        ' id, created_atは定型的なため省略
+        + recipient : ForeignKey
+        + notification_type : ForeignKey
+        + message : CharField
+        + related_url : URLField
+    }
+}
+
+' --- アプリケーションをまたぐリレーションを定義 ---
+
+' ■ 主要な関連
+CustomUser "1" -[#B80000,thickness=3]- "*" Product : seller
+CustomUser "1" -[#B80000,thickness=3]- "*" Transaction : buyer
+Product "1" -[#B80000,thickness=3]- "0..1" Transaction
+
+' ■ 従属的な関連
+CustomUser "1" -[#006699,thickness=2]- "*" Comment : user
+CustomUser "1" -[#006699,thickness=2]- "*" Favorite
+CustomUser "1" -[#006699,thickness=2]- "*" Message : sender
+CustomUser "1" -[#006699,thickness=2]- "*" Review : reviewer
+CustomUser "1" -[#006699,thickness=2]- "*" Review : reviewee
+CustomUser "1" -[#006699,thickness=2]- "*" Notification : recipient
+
+Product "1" -[#006699,thickness=2]- "*" Comment
+Product "1" -[#006699,thickness=2]- "*" Favorite
+Product "1" -[#006699,thickness=2]- "0..*" ProductImage
+
+Transaction "1" -[#006699,thickness=2]- "*" Message
+Transaction "1" -[#006699,thickness=2]- "*" Review
+
+' ■ マスタ参照の関連
+Category "1" -[#008000,thickness=1]- "0..*" Product
+Condition "1" -[#008000,thickness=1]- "0..*" Product
+Status "1" -[#008000,thickness=1]- "0..*" Product
+TransactionStatus "1" -[#008000,thickness=1]- "0..*" Transaction
+NtfType "1" -[#008000,thickness=1]- "0..*" Notification
+
+@enduml
