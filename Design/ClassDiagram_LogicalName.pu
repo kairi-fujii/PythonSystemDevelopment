@@ -11,13 +11,11 @@ skinparam {
 abstract class "抽象ユーザー" as AbstractUser
 
 class 役割 {
-    ' idは自動生成のため省略
     + 名前 : CharField
     + 表示名 : CharField
 }
 
 class ユーザー {
-    ' idは自動生成のため省略
     + 役割 : ForeignKey
     + 保有ポイント : PositiveIntegerField
     + プロフィール画像 : ImageField
@@ -25,36 +23,30 @@ class ユーザー {
 }
 
 class カテゴリ {
-    ' id, created_atは定型的なため省略
     + 名前 : CharField
 }
 
 class 商品状態 {
-    ' idは自動生成のため省略
     + 名前 : CharField
     + 説明 : TextField
 }
 
 class 販売状況 {
-    ' idは自動生成のため省略
     + 名前 : CharField
     + 表示名 : CharField
 }
 
 class 取引状況 {
-    ' idは自動生成のため省略
     + 名前 : CharField
     + 表示名 : CharField
 }
 
 class 通知種別 {
-    ' idは自動生成のため省略
     + 名前 : CharField
     + 表示名 : CharField
 }
 
 class 商品 {
-    ' id, created_atは定型的なため省略
     + 出品者 : ForeignKey
     + カテゴリ : ForeignKey
     + 商品状態 : ForeignKey
@@ -65,13 +57,11 @@ class 商品 {
 }
 
 class 商品画像 {
-    ' idは自動生成のため省略
     + 商品 : ForeignKey
     + 画像 : ImageField
 }
 
 class 取引 {
-    ' id, created_atは定型的なため省略
     + 商品 : OneToOneField
     + 購入者 : ForeignKey
     + 取引状況 : ForeignKey
@@ -81,22 +71,18 @@ class 取引 {
 }
 
 class コメント {
-    ' id, created_atは定型的なため省略
     + 投稿者 : ForeignKey
     + 商品 : ForeignKey
     + 内容 : TextField
 }
 
 class お気に入り {
-    ' id, created_atは定型的なため省略
     + ユーザー : ForeignKey
     + 商品 : ForeignKey
     --
-    ' Meta: unique_together = ("user", "product")
 }
 
 class メッセージ {
-    ' id, created_atは定型的なため省略
     + 取引 : ForeignKey
     + 送信者 : ForeignKey
     + 内容 : TextField
@@ -104,7 +90,6 @@ class メッセージ {
 }
 
 class 評価 {
-    ' id, created_atは定型的なため省略
     + 取引 : ForeignKey
     + 評価者 : ForeignKey
     + 被評価者 : ForeignKey
@@ -113,7 +98,6 @@ class 評価 {
 }
 
 class 通知 {
-    ' id, created_atは定型的なため省略
     + 受信者 : ForeignKey
     + 通知種別 : ForeignKey
     + 内容 : CharField

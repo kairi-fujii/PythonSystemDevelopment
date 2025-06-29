@@ -1,8 +1,6 @@
 @startuml Django_Physical_Model_Final_Refined
 
 ' === デザイン調整 (skinparam) ===
-' これらは図の見た目を整える基本的な設定です。
-' 万が一、お使いの環境でエラーが出る場合は、このセクションを削除しても図の構造は変わりません。
 skinparam {
     BackgroundColor #FFFFFF
     ArrowColor #505050
@@ -21,13 +19,11 @@ package "accounts" {
     abstract class AbstractUser
     
     class Role {
-        ' idは自動生成のため省略
         + name : CharField
         + display_name : CharField
     }
 
     class CustomUser {
-        ' idは自動生成のため省略
         + role : ForeignKey
         + points : PositiveIntegerField
         + profile_image : ImageField
@@ -44,33 +40,27 @@ package "accounts" {
 ' ===================================
 package "main" {
     class Category {
-        ' idは自動生成のため省略
         + name : CharField
     }
     
     class Condition {
-        ' idは自動生成のため省略
         + name : CharField
         + description : TextField
     }
 
     class Status {
-        ' idは自動生成のため省略
         + name : CharField
     }
 
     class TransactionStatus {
-        ' idは自動生成のため省略
         + name : CharField
     }
 
     class NtfType {
-        ' idは自動生成のため省略
         + name : CharField
     }
 
     class Product {
-        ' id, created_atは定型的なため省略
         + seller : ForeignKey
         + category : ForeignKey
         + condition : ForeignKey
@@ -81,13 +71,11 @@ package "main" {
     }
     
     class ProductImage {
-        ' idは自動生成のため省略
         + product : ForeignKey
         + image : ImageField
     }
     
     class Transaction {
-        ' id, created_atは定型的なため省略
         + product : OneToOneField
         + buyer : ForeignKey
         + status : ForeignKey
@@ -97,22 +85,17 @@ package "main" {
     }
     
     class Comment {
-        ' id, created_atは定型的なため省略
         + user : ForeignKey
         + product : ForeignKey
         + content : TextField
     }
 
     class Favorite {
-        ' id, created_atは定型的なため省略
         + user : ForeignKey
         + product : ForeignKey
-        --
-        ' Meta: unique_together = ("user", "product")
     }
 
     class Message {
-        ' id, created_atは定型的なため省略
         + transaction : ForeignKey
         + sender : ForeignKey
         + content : TextField
@@ -120,7 +103,6 @@ package "main" {
     }
     
     class Review {
-        ' id, created_atは定型的なため省略
         + transaction : ForeignKey
         + reviewer : ForeignKey
         + reviewee : ForeignKey
@@ -129,7 +111,6 @@ package "main" {
     }
     
     class Notification {
-        ' id, created_atは定型的なため省略
         + recipient : ForeignKey
         + notification_type : ForeignKey
         + message : CharField
