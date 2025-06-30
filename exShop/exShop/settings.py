@@ -125,3 +125,14 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 認証に使うユーザーモデルを指定
+# 'アプリケーション名.モデル名'
+AUTH_USER_MODEL = 'accounts.CustomUser'
+# メディアファイルの設定
+MEDIA_URL = '/media/'   # メディアファイルのURL
+MEDIA_ROOT = BASE_DIR / 'media'  # メディアファイルの保存先ディレクトリ
+# 静的ファイルの設定
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # プロジェクトの静的ファイルディレクトリ
+]
