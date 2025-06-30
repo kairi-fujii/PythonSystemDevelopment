@@ -1,0 +1,26 @@
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel">オフキャンバス</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="閉じる"></button>   
+    </div>
+    <div class="offcanvas-body">
+        <ui class="list-group">
+            <!-- ログインユーザーが管理者の場合に管理画面に遷移するリンクが表示される -->
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <li class="list-group-item">
+                        <a class="nav-link" href="{% url 'admin:index' %}">管理画面</a> 
+                    </li>
+                {% endif %}
+            {% endif %}
+            <li class="list-group-item">
+                <a class="nav-link" href="">ホーム</a>
+
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" href="">このサイトについて</a>
+            </li>
+        </ul>
+    </div>
+</div>

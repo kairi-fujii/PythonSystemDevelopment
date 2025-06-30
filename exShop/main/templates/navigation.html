@@ -1,0 +1,40 @@
+<!-- ナビゲーションバーの部分 -->
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <!-- 左オフキャンバスメニューを開くボタン -->
+    <button class="btn btn-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+        menu
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <!-- 通常のナビゲーションメニュー（横並び） -->
+            <li class="nav-item active">
+                <a class="btn btn-primary" href="/">ホーム</a>
+            </li>
+            
+            <li class="nav-item active">
+                <!-- ログイン中かどうか判断してメニューとログインメッセージが切り替わる -->
+                {% if user.is_authenticated %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">
+                        <a href="" class="text-white text-decoration-none">menue1</a>
+                    </p>
+                {% else %}
+                    <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">
+                        <a href="{% url 'accounts:login' %}" class="text-white text-decoration-none">ログインしてください</a>
+                    </p>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+
+    <!-- 右オフキャンバスメニューを開くボタン -->
+    <button class="btn btn-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+        profile menu
+    </button>
+</nav>
+
+<!-- 左側オフキャンバスメニュー -->
+ {% include 'left_sidebar.html' %}
+
+<!-- 右側オフキャンバスメニュー -->
+{% include 'right_sidebar.html' %}

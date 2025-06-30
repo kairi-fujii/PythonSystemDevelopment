@@ -9,6 +9,10 @@ class Category(models.Model):
     name = models.CharField("カテゴリ名", max_length=100, unique=True)
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
 
+    class Meta:
+        verbose_name = 'カテゴリ'
+        verbose_name_plural = 'カテゴリマスタ'
+
     def __str__(self):
         return self.name
 
@@ -16,6 +20,10 @@ class Condition(models.Model):
     """商品状態マスタ"""
     name = models.CharField("状態名", max_length=100, unique=True)
     description = models.TextField("説明", blank=True)
+
+    class Meta:
+        verbose_name = '商品状態'
+        verbose_name_plural = '商品状態マスタ'
 
     def __str__(self):
         return self.name
@@ -25,6 +33,10 @@ class Status(models.Model):
     name = models.CharField("状況名（内部用）", max_length=50, unique=True)
     display_name = models.CharField("状況名（表示用）", max_length=50)
 
+    class Meta:
+        verbose_name = '販売状況'
+        verbose_name_plural = '販売状況マスタ'
+
     def __str__(self):
         return self.display_name
 
@@ -33,6 +45,10 @@ class TransactionStatus(models.Model):
     name = models.CharField("状況名（内部用）", max_length=50, unique=True)
     display_name = models.CharField("状況名（表示用）", max_length=50)
 
+    class Meta:
+        verbose_name = '取引状況'
+        verbose_name_plural = '取引状況マスタ'
+
     def __str__(self):
         return self.display_name
 
@@ -40,6 +56,10 @@ class NtfType(models.Model):
     """通知種別マスタ"""
     name = models.CharField("種別名（内部用）", max_length=50, unique=True)
     display_name = models.CharField("種別名（表示用）", max_length=50)
+
+    class Meta:
+        verbose_name = '通知種別'
+        verbose_name_plural = '通知種別マスタ'
 
     def __str__(self):
         return self.display_name
@@ -60,6 +80,10 @@ class Product(models.Model):
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
+    class Meta:
+        verbose_name = '商品'
+        verbose_name_plural = '商品一覧'
+
     def __str__(self):
         return self.name
 
@@ -67,6 +91,10 @@ class ProductImage(models.Model):
     """商品画像モデル"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images', verbose_name="商品")
     image = models.ImageField("画像", upload_to='products/')
+
+    class Meta:
+        verbose_name = '商品画像'
+        verbose_name_plural = '商品画像一覧'
 
     def __str__(self):
         return f"{self.product.name} の画像"
@@ -83,6 +111,10 @@ class Transaction(models.Model):
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
     updated_at = models.DateTimeField("更新日時", auto_now=True)
 
+    class Meta:
+        verbose_name = '取引'
+        verbose_name_plural = '取引一覧'
+
     def __str__(self):
         return f"{self.product.name} の取引"
 
@@ -96,6 +128,10 @@ class Comment(models.Model):
     content = models.TextField("内容")
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
 
+    class Meta:
+        verbose_name = 'コメント'
+        verbose_name_plural = 'コメント一覧'
+
 class Favorite(models.Model):
     """お気に入りモデル"""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites', verbose_name="ユーザー")
@@ -103,7 +139,9 @@ class Favorite(models.Model):
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'product') # 同一ユーザーが同一商品に複数お気に入りできないように
+        verbose_name = 'お気に入り'
+        verbose_name_plural = 'お気に入り一覧'
+        unique_together = ('user', 'product')
 
 class Message(models.Model):
     """取引メッセージモデル"""
@@ -112,6 +150,10 @@ class Message(models.Model):
     content = models.TextField("内容")
     is_read = models.BooleanField("既読フラグ", default=False)
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = '取引メッセージ'
+        verbose_name_plural = '取引メッセージ一覧'
 
 class Review(models.Model):
     """評価モデル"""
@@ -122,6 +164,10 @@ class Review(models.Model):
     comment = models.TextField("コメント", blank=True)
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
 
+    class Meta:
+        verbose_name = '評価'
+        verbose_name_plural = '評価一覧'
+
 class Notification(models.Model):
     """通知モデル"""
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications', verbose_name="受信者")
@@ -130,3 +176,7 @@ class Notification(models.Model):
     related_url = models.URLField("関連URL", blank=True, null=True)
     is_read = models.BooleanField("既読フラグ", default=False)
     created_at = models.DateTimeField("作成日時", auto_now_add=True)
+
+    class Meta:
+        verbose_name = '通知'
+        verbose_name_plural = '通知一覧'

@@ -1,0 +1,96 @@
+/* カスタムスタイル */
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    color: black;
+}
+.navbar, .navbar-nav .nav-link {
+    background-color: #003366; /* 青色 */
+}
+.navbar-nav .nav-link {
+    color: white;
+}
+.navbar-nav .nav-link:hover {
+    color: #66ccff; /* 青色 */
+}
+.sidebar {
+    background-color: #333333; /* 黒色 */
+    color: white;
+    min-height: 100vh;
+}
+.sidebar .nav-link {
+    color: white;
+}
+.sidebar .nav-link:hover {
+    background-color: #003366; /* 青色 */
+}
+.footer {
+    background-color: #003366; /* 青色 */
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+}
+
+/* オフキャンバスメニューの背景色やボーダーを調整 */
+.offcanvas-start {
+    width: 250px; /* メニューの幅 */
+}
+
+/* 必要に応じて、オフキャンバスメニューの背景色やトランジションを変更 */
+.offcanvas-header {
+    background-color: #007bff;
+    color: white;
+}
+
+/* オフキャンバスメニュー内のリンクのデザイン */
+.offcanvas-body .nav-link {
+    color: #333;
+}
+
+.offcanvas-body .nav-link:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+/* フッターを固定する */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+/* サイト下部フッター */
+footer {
+    background-color: #f8f9fa;
+    padding: 10px;
+    text-align: center;
+    position: relative;
+    width: 100%;
+}
+
+/* コンテンツ部分が画面の残りの部分を埋めるようにする */
+.content-wrapper {
+    padding-top: 70px;  /* ナビゲーションメニューの高さ分を調整 */
+}
+
+/* ナビゲーションを上部に固定 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;  /* 他の要素より前面に表示されるように */
+}
+
+/* より具体的なセレクタで上書き */
+body .container-fluid {
+    padding-top: 40px !important;  /* 上部メニューの高さ分 */
+    padding-bottom: 40px !important;  /* フッターの高さに合わせて調整 */
+}
+
+.container-half {
+    width: 50%; /* 横幅を50%に設定 */
+    margin: 0 auto; /* 横中央に配置 */
+}

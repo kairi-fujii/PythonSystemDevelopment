@@ -1,0 +1,25 @@
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasRightLabel">Offcanvas right</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- 右オフキャンバスの内容 -->
+        <ui class="list-group">
+            {% if user.is_authenticated %}
+                <li class="list-group-item">
+                    <a href="{% url 'accounts:logout' %}" class=" text-black text-decoration-none" >
+                        ログアウト
+                    </a>
+                </li>
+            {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'accounts:login' %}" class=" text-black text-decoration-none" >
+                        ログイン
+                    </a>
+                </li>
+            {% endif %}
+        </ui>
+    </div>
+</div>
