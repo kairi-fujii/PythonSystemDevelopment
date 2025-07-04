@@ -149,7 +149,7 @@ admin.site.register(CustomUser, UserAdmin)
 admin.site.register(Role)
 admin.site.register(Address)
 
-
+----- データの準備：疑似データを作成して用意しておくとこで画面で確認ができる ----------
 
 ##################################################
 # 
@@ -163,9 +163,12 @@ python manage.py makemigrations accounts main
 # マイグレーションの実行履歴を確認する
 python manage.py showmigrations
 
-#マイグレーションの履歴を全て取り消す
+# マイグレーションの履歴を全て取り消す
 python manage.py migrate main zero
 python manage.py migrate accounts zero
 python manage.py migrate admin zero
 python manage.py migrate auth zero
+
+# 疑似データを作成するようにFakeライブラリをインポートする
+pip install Faker
 

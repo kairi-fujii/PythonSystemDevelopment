@@ -7,16 +7,39 @@ from .models import CustomUser, Role, Address
 # UserAdminを継承して、一覧表示などをカスタマイズ
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    # 一覧画面に表示する項目を定義
-    # フィールドのverbose_name（日本語名）が自動でヘッダーに使われます
+
+    # ① 一覧画面の表示項目
     list_display = ('username', 'email', 'role', 'points', 'is_staff')
-    # 役割やスタッフ権限で絞り込みができるようにする
-    list_filter = ('role', 'is_staff', 'is_superuser')
-    # ユーザー名とメールアドレスで検索できるようにする
+    
+    # ② 絞り込みフィルター
+    list_filter = ('role', 'is_staff', 'is_superuser', 'groups')
+    
+    # ③ 検索ボックスの対象フィールド
     search_fields = ('username', 'email')
     
-    # 編集画面の項目は、一旦UserAdminのデフォルトを使用
-    # fieldsets = ... (ここではカスタマイズしない)
+    # ④ 編集画面のセクションとフィールドのレイアウト
+    fieldsets = (
+        # セクション名, { 'fields': (フィールド名のタプル,) }
+        (None, {'fields': ('username', 'password')}),
+        ('個人情報', {'fields': ('first_name', 'last_name', 'email')}),
+        
+        # ★★★ ここでロールとポイントを編集可能にする ★★★
+        ('カスタム情報', {'fields': ('role', 'points', 'profile_image', 'introduction')}),
+        
+        # ★★★ グループとパーミッションを削除し、is_active等のみに限定 ★★★
+        ('権限', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
+        
+        ('重要な日時', {'fields': ('last_login', 'date_joined')}),
+    )
+
+    # ⑤ 新規作成画面のフィールドレイアウト
+    #   (fieldsetsと合わせておくと整合性が取れる)
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password', 'password2'),
+        }),
+    )
 
 # Roleモデルの管理画面
 @admin.register(Role)
