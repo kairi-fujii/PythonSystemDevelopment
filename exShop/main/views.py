@@ -1,5 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.views.generic import ListView
+from main.models import *
+
 
 # ========================================
 # メインダッシュボード画面（トップページ）
@@ -15,10 +18,32 @@ class IndexView(TemplateView):
 # 商品関連の画面ビュー
 # ================================
 
-class ProductListView(TemplateView):
-    # 商品一覧を表示するためのテンプレートを描画
-    # 今後は「検索」「カテゴリフィルター」「並び替え」などの機能も追加予定
-    template_name = 'main/product_list.html'
+# class ProductListView(TemplateView):
+#     # 商品一覧を表示するためのテンプレートを描画
+#     # 今後は「検索」「カテゴリフィルター」「並び替え」などの機能も追加予定
+#     template_name = 'main/product_list.html'
+    
+class ProductListView(ListView):
+    model = Product
+    template_name = 'main/product_list.html'  # 使用するテンプレート
+    context_object_name = 'products'          # テンプレート内の変数名
+    paginate_by = 24                          # 1ページあたりの表示件数
+
+    def get_queryset(self):
+        queryset = Product.objects.all().order_by('-created_at')
+        query = self.request.GET.get('q')
+
+        if query:
+            # 商品名、説明、カテゴリ名に icontains でフィルタをかける（Q未使用）
+            # 各条件を別々にフィルタしてから結合
+            name_matches = Product.objects.filter(name__icontains=query)
+            description_matches = Product.objects.filter(description__icontains=query)
+            category_matches = Product.objects.filter(category__name__icontains=query)
+
+            # 各クエリセットを結合し、重複を排除
+            queryset = (name_matches | description_matches | category_matches).distinct()
+
+        return queryset
 
 class ProductDetailView(TemplateView):
     # 商品の詳細情報を表示するテンプレートを描画
