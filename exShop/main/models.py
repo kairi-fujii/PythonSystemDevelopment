@@ -32,6 +32,7 @@ class Status(models.Model):
     """販売状況マスタ"""
     name = models.CharField("状況名（内部用）", max_length=50, unique=True)
     display_name = models.CharField("状況名（表示用）", max_length=50)
+    purchasable = models.BooleanField("購入可能フラグ", default=False)
 
     class Meta:
         verbose_name = '販売状況'
@@ -63,6 +64,30 @@ class NtfType(models.Model):
 
     def __str__(self):
         return self.display_name
+
+class StatusTransition(models.Model):
+    """販売状況遷移マスタ"""
+    from_status = models.ForeignKey(
+        Status,
+        on_delete=models.CASCADE,
+        related_name='transitions_from',
+        verbose_name="遷移元ステータス"
+    )
+    to_status = models.ForeignKey(
+        Status,
+        on_delete=models.CASCADE,
+        related_name='transitions_to',
+        verbose_name="遷移先ステータス"
+    )
+    note = models.CharField("備考", max_length=255, blank=True, null=True)
+
+    class Meta:
+        verbose_name = '販売状況遷移'
+        verbose_name_plural = '販売状況遷移マスタ'
+        unique_together = ('from_status', 'to_status')
+
+    def __str__(self):
+        return f"{self.from_status.display_name} → {self.to_status.display_name}"
 
 
 # ===================================

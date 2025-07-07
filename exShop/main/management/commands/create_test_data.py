@@ -21,10 +21,7 @@ from faker import Faker               # テストデータ用のランダムな�
 
 # プロジェクト内のアプリケーションから必要なモデルをインポート
 from accounts.models import CustomUser, Role, Address
-from main.models import (
-    Category, Condition, Status, TransactionStatus, NtfType,
-    Product, ProductImage, Transaction, Comment, Favorite, Message, Review, Notification
-)
+from main.models import *
 
 # ------------------------------------------------------------------------
 # テストデータに関する定数（生成件数など）を定義
@@ -155,12 +152,19 @@ class Command(BaseCommand):
         ]
 
         # 商品ステータスのマスタ定義
-        status_on_sale, _ = Status.objects.get_or_create(name='ON_SALE', display_name='販売中')
-        status_sold_out, _ = Status.objects.get_or_create(name='SOLD_OUT', display_name='売却済')
+        status_on_sale, _ = Status.objects.get_or_create(name='ON_SALE', display_name='販売中', purchasable=True)
+        status_sold_out, _ = Status.objects.get_or_create(name='SOLD_OUT', display_name='売却済', purchasable=False)
 
         # 取引ステータスのマスタ定義
         ts_waiting, _ = TransactionStatus.objects.get_or_create(name='WAITING_FOR_SHIPPING', display_name='発送待ち')
         ts_completed, _ = TransactionStatus.objects.get_or_create(name='COMPLETED', display_name='取引完了')
+
+        # ステータス遷移マスタを登録（例：販売中→売却済）
+        StatusTransition.objects.get_or_create(
+            from_status=status_on_sale,
+            to_status=status_sold_out,
+            defaults={'note': '販売中から売却済への遷移'}
+        )
 
         # ----------------------------------------------------------------
         # Step 3: ユーザーと住所の一括作成
@@ -255,10 +259,14 @@ class Command(BaseCommand):
         comments_to_create = []  # 一括作成用のコメントオブジェクトリスト
 
         # 全商品のうち、指定した割合の商品のみにコメントを付ける
-        products_to_comment = random.sample(
-            list(Product.objects.all()),
-            k=int(NUM_PRODUCTS * COMMENT_RATIO)
-        )
+        # products_to_comment = random.sample(
+        #     list(Product.objects.all()),
+        #     k=int(NUM_PRODUCTS * COMMENT_RATIO)
+        # )
+
+        all_products = list(Product.objects.all())
+        sample_size = min(len(all_products), int(NUM_PRODUCTS * COMMENT_RATIO))  # ← 最大数に制限
+        products_to_comment = random.sample(all_products, k=sample_size)
 
         for product in products_to_comment:
             # その商品に付けるコメント数をランダムで決定（1～5件）

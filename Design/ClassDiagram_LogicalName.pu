@@ -1,4 +1,4 @@
-@startuml Final_Japanese_Model_Refined_Roles
+@startuml Japanese_Model
 
 ' === デザイン調整 (skinparam) ===
 skinparam {
@@ -32,13 +32,20 @@ class 商品状態 {
 }
 
 class 販売状況 {
-    + 名前 : CharField
+    + 状況名 : CharField
     + 表示名 : CharField
+    + 購入可能 : BooleanField
 }
 
 class 取引状況 {
     + 名前 : CharField
     + 表示名 : CharField
+}
+
+class 販売状況遷移 {
+    + 遷移元 : ForeignKey(販売状況)
+    + 遷移先 : ForeignKey(販売状況)
+    + 備考 : CharField
 }
 
 class 通知種別 {
@@ -140,5 +147,8 @@ AbstractUser <|-- ユーザー
 販売状況 "1" -[#008000,thickness=1]- "0..*" 商品
 取引状況 "1" -[#008000,thickness=1]- "0..*" 取引
 通知種別 "1" -[#008000,thickness=1]- "0..*" 通知
+
+販売状況 "1" -[#005500,thickness=1]- "*" 販売状況遷移 : 遷移元
+販売状況 "1" -[#005500,thickness=1]- "*" 販売状況遷移 : 遷移先
 
 @enduml

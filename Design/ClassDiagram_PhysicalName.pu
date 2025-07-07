@@ -1,6 +1,6 @@
-@startuml Django_Physical_Model_Final_Refined
+@startuml Django_Physical_Model_Updated
 
-' === デザイン調整 (skinparam) ===
+' === Style Settings ===
 skinparam {
     BackgroundColor #FFFFFF
     ArrowColor #505050
@@ -12,12 +12,12 @@ skinparam {
     PackageBackgroundColor #FAFAFA
 }
 
-' ===================================
-' === accounts アプリケーション ===
-' ===================================
+' ===============================
+' === accounts application ===
+' ===============================
 package "accounts" {
     abstract class AbstractUser
-    
+
     class Role {
         + name : CharField
         + display_name : CharField
@@ -30,19 +30,18 @@ package "accounts" {
         + introduction : TextField
     }
 
-    ' --- accounts内のリレーション定義 ---
     AbstractUser <|-- CustomUser
     Role "1" -[#008000,thickness=1]- "0..*" CustomUser
 }
 
-' ===================================
-' === main アプリケーション ===
-' ===================================
+' ============================
+' === main application ===
+' ============================
 package "main" {
     class Category {
         + name : CharField
     }
-    
+
     class Condition {
         + name : CharField
         + description : TextField
@@ -50,14 +49,24 @@ package "main" {
 
     class Status {
         + name : CharField
+        + display_name : CharField
+        + purchasable : BooleanField
+    }
+
+    class StatusTransition {
+        + from_status : ForeignKey(Status)
+        + to_status : ForeignKey(Status)
+        + note : CharField
     }
 
     class TransactionStatus {
         + name : CharField
+        + display_name : CharField
     }
 
     class NtfType {
         + name : CharField
+        + display_name : CharField
     }
 
     class Product {
@@ -69,12 +78,12 @@ package "main" {
         + description : TextField
         + price : PositiveIntegerField
     }
-    
+
     class ProductImage {
         + product : ForeignKey
         + image : ImageField
     }
-    
+
     class Transaction {
         + product : OneToOneField
         + buyer : ForeignKey
@@ -83,7 +92,7 @@ package "main" {
         + platform_fee : PositiveIntegerField
         + seller_income : PositiveIntegerField
     }
-    
+
     class Comment {
         + user : ForeignKey
         + product : ForeignKey
@@ -101,7 +110,7 @@ package "main" {
         + content : TextField
         + is_read : BooleanField
     }
-    
+
     class Review {
         + transaction : ForeignKey
         + reviewer : ForeignKey
@@ -109,23 +118,24 @@ package "main" {
         + rating : PositiveSmallIntegerField
         + comment : TextField
     }
-    
+
     class Notification {
         + recipient : ForeignKey
         + notification_type : ForeignKey
         + message : CharField
         + related_url : URLField
+        + is_read : BooleanField
     }
 }
 
-' --- アプリケーションをまたぐリレーションを定義 ---
+' === Relations ===
 
-' ■ 主要な関連
+' Primary relations
 CustomUser "1" -[#B80000,thickness=3]- "*" Product : seller
 CustomUser "1" -[#B80000,thickness=3]- "*" Transaction : buyer
 Product "1" -[#B80000,thickness=3]- "0..1" Transaction
 
-' ■ 従属的な関連
+' Dependent relations
 CustomUser "1" -[#006699,thickness=2]- "*" Comment : user
 CustomUser "1" -[#006699,thickness=2]- "*" Favorite
 CustomUser "1" -[#006699,thickness=2]- "*" Message : sender
@@ -140,11 +150,15 @@ Product "1" -[#006699,thickness=2]- "0..*" ProductImage
 Transaction "1" -[#006699,thickness=2]- "*" Message
 Transaction "1" -[#006699,thickness=2]- "*" Review
 
-' ■ マスタ参照の関連
+' Master reference relations
 Category "1" -[#008000,thickness=1]- "0..*" Product
 Condition "1" -[#008000,thickness=1]- "0..*" Product
 Status "1" -[#008000,thickness=1]- "0..*" Product
 TransactionStatus "1" -[#008000,thickness=1]- "0..*" Transaction
 NtfType "1" -[#008000,thickness=1]- "0..*" Notification
+
+' Status transition
+Status "1" -[#005500,thickness=1]- "*" StatusTransition : from_status
+Status "1" -[#005500,thickness=1]- "*" StatusTransition : to_status
 
 @enduml
