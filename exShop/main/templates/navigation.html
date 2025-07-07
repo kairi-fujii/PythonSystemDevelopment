@@ -18,6 +18,7 @@
                     <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">
                         <a href="" class="text-white text-decoration-none">menue1</a>
                     </p>
+                    
                 {% else %}
                     <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">
                         <a href="{% url 'accounts:login' %}" class="text-white text-decoration-none">ログインしてください</a>
@@ -27,6 +28,39 @@
         </ul>
     </div>
 
+    <!-- ベルアイコンを profile menu ボタンの左に配置 -->
+    <div class="d-flex align-items-center me-2">
+        <!-- 通知一覧へのリンク。btnクラスでボタン風に装飾 -->
+        <a href="{% url 'main:notification_list' %}" class="btn btn-outline-light position-relative" title="通知">
+            <!-- SVGアイコンの意味と使い方 -->
+            <!-- 
+                SVG（Scalable Vector Graphics）はベクター形式の画像データで、画質を劣化させずに拡大縮小可能
+                ここではBootstrap Iconsの「ベル」アイコンを埋め込みで利用しています
+                主な属性：
+                - xmlns: SVG名前空間を指定。必須
+                - width, height: 表示サイズ（px単位）
+                - fill: 塗りつぶし色（ここではcurrentColorで親要素の文字色を適用）
+                - class: CSSクラス名。Bootstrap Icons用クラス名を指定
+                - viewBox: SVGの座標範囲を指定。アイコンの描画領域の大きさを決める
+
+                下記リンクよりbootstrap-iconsのSVGアイコンを取得できます
+                https://icons.getbootstrap.com
+            -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
+                <!-- ベルの下部（ベルの足）を描くパス -->
+                <path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16z"/>
+                <!-- ベル本体を描くパス -->
+                <path d="M8 1a4 4 0 0 0-4 4v3.586l-.707.707A1 1 0 0 0 3 11h10a1 1 0 0 0 .707-1.707L13 8.586V5a4 4 0 0 0-4-4z"/>
+            </svg>
+            
+            <!-- 未読数バッジ。位置は絶対配置でベルアイコンの右上に表示予定 -->
+            <!-- 現状は未実装なのでdisplay:noneで非表示 -->
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">
+              0
+            </span>
+        </a>
+    </div>
+
     <!-- 右オフキャンバスメニューを開くボタン -->
     <button class="btn btn-primary mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
         profile menu
@@ -34,7 +68,7 @@
 </nav>
 
 <!-- 左側オフキャンバスメニュー -->
- {% include 'left_sidebar.html' %}
+{% include 'left_sidebar.html' %}
 
 <!-- 右側オフキャンバスメニュー -->
 {% include 'right_sidebar.html' %}

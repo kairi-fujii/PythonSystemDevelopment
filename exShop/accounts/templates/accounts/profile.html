@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1>ユーザーのプロフィール詳細を表示する画面</h1>
+        <p>基本情報、プロフィール画像、紹介文、住所一覧などを含める予定</p>
+    </div>
+
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <h1>プロフィール</h1>
+        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">プロフィール編集</a>
+    </div>
+
+    <!-- プロフィール情報の表示 -->
+
+    <!-- 住所登録・変更へのリンクもここに追加 -->
+    <p>
+        <a href="{% url 'accounts:address_create' %}" class="btn btn-secondary">住所登録</a>
+    </p>
+    <p>
+        <a href="{% url 'accounts:address_edit' %}" class="btn btn-secondary">住所変更</a>
+    </p>
+{% endblock %}

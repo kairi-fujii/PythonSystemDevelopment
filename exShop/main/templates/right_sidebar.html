@@ -9,15 +9,17 @@
         <ui class="list-group">
             {% if user.is_authenticated %}
                 <li class="list-group-item">
-                    <a href="{% url 'accounts:logout' %}" class=" text-black text-decoration-none" >
-                        ログアウト
-                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="text-decoration-none text-dark">プロフィール</a>
+                </li>
+                <li class="list-group-item">
+                    <a href="{% url 'accounts:logout' %}" class="text-decoration-none text-dark">ログアウト</a>
                 </li>
             {% else %}
                 <li class="list-group-item">
-                    <a href="{% url 'accounts:login' %}" class=" text-black text-decoration-none" >
-                        ログイン
-                    </a>
+                    <a href="{% url 'accounts:login' %}" class="text-decoration-none text-dark">ログイン</a>
+                </li>
+                <li class="list-group-item">
+                    <a href="{% url 'accounts:register' %}" class="text-decoration-none text-dark">新規登録</a>
                 </li>
             {% endif %}
         </ui>

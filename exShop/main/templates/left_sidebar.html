@@ -15,11 +15,22 @@
                 {% endif %}
             {% endif %}
             <li class="list-group-item">
-                <a class="nav-link" href="">ホーム</a>
-
+                <a class="nav-link" href="{% url 'main:index' %}">ホーム</a>
             </li>
             <li class="list-group-item">
-                <a class="nav-link" href="">このサイトについて</a>
+                <a class="nav-link" href="{% url 'main:product_list' %}">商品一覧</a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" href="{% url 'main:transaction_list' %}">取引一覧</a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" href="{% url 'main:favorite_list' %}">お気に入り一覧</a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" href="{% url 'main:my_product_manage' %}">自分の商品管理</a>
+            </li>
+            <li class="list-group-item">
+                <a class="nav-link" href="{% url 'main:product_create' %}">商品出品</a>
             </li>
         </ul>
     </div>

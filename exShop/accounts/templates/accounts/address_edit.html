@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="mb-4">
+        <h1>既存の住所を編集する画面</h1>
+        <p>内容変更後、プロフィール編集画面などへリダイレクトする設計</p>
+    </div>
+    
+    <p>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">登録</a>
+    </p>
+    <p>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">キャンセル</a>
+    </p>
+{% endblock %}
