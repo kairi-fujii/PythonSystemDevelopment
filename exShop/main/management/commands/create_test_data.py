@@ -21,7 +21,10 @@ from faker import Faker               # テストデータ用のランダムな�
 
 # プロジェクト内のアプリケーションから必要なモデルをインポート
 from accounts.models import CustomUser, Role, Address
-from main.models import *
+from main.models import (
+    Category, Condition, Status, TransactionStatus, NtfType,
+    Product, ProductImage, Transaction, Comment, Favorite, Message, Review, Notification
+)
 
 # ------------------------------------------------------------------------
 # テストデータに関する定数（生成件数など）を定義
@@ -121,19 +124,22 @@ class Command(BaseCommand):
 
         # カテゴリデータを辞書で一括定義（親カテゴリ名と、その下のカテゴリ一覧）
         categories_data = {
-            "レディース": [
-                ("tops_lady", "トップス"), ("outer_lady", "ジャケット/アウター"),
-                ("skirt_lady", "スカート"), ("onepiece_lady", "ワンピース"),
-                ("shoes_lady", "靴"), ("bag_lady", "バッグ"),
-                ("fashion_etc_lady", "その他")
-            ],
-            "メンズ": [
-                ("tops_men", "トップス"), ("outer_men", "ジャケット/アウター"),
-                ("pants_men", "パンツ"), ("shoes_men", "靴"),
-                ("bag_men", "バッグ"), ("watch_men", "時計"),
-                ("fashion_etc_men", "その他")
-            ],
-            # ...以下略（元の内容と同様に定義）
+            "レディース": [("tops_lady", "トップス"), ("outer_lady", "ジャケット/アウター"), ("skirt_lady", "スカート"), ("onepiece_lady", "ワンピース"), ("shoes_lady", "靴"), ("bag_lady", "バッグ"), ("fashion_etc_lady", "その他")],
+            "メンズ": [("tops_men", "トップス"), ("outer_men", "ジャケット/アウター"), ("pants_men", "パンツ"), ("shoes_men", "靴"), ("bag_men", "バッグ"), ("watch_men", "時計"), ("fashion_etc_men", "その他")],
+            "ベビー・キッズ": [("baby_clothes", "ベビー服 (~95cm)"), ("kids_clothes", "キッズ服 (100cm~)"), ("stroller", "ベビーカー"), ("toy_baby", "知育玩具"), ("kids_etc", "その他")],
+            "本": [("novel", "文学/小説"), ("manga_all", "漫画(全巻セット)"), ("manga_single", "漫画(単巻)"), ("business_book", "ビジネス/経済"), ("picture_book", "絵本"), ("book_etc", "その他")],
+            "音楽": [("jpop_cd", "邦楽"), ("kpop_cd", "K-POP/アジア"), ("pop_cd", "洋楽"), ("anime_cd", "アニメ"), ("music_etc", "その他")],
+            "ゲーム": [("console_body", "家庭用ゲーム本体"), ("console_soft", "家庭用ゲームソフト"), ("portable_body", "携帯用ゲーム本体"), ("portable_soft", "携帯用ゲームソフト"), ("pc_game", "PCゲーム"), ("game_etc", "その他")],
+            "おもちゃ・ホビー・グッズ": [("figure", "フィギュア"), ("plamodel", "プラモデル"), ("trading_card", "トレーディングカード"), ("character_goods", "キャラクターグッズ"), ("hobby_etc", "その他")],
+            "スマートフォン/携帯電話": [("smartphone_body", "スマートフォン本体"), ("smartphone_case", "スマホケース"), ("charger", "充電器"), ("film", "保護フィルム"), ("mobile_etc", "その他")],
+            "PC/タブレット": [("laptop_pc", "ノートPC"), ("desktop_pc", "デスクトップ型PC"), ("tablet", "タブレット"), ("display", "ディスプレイ"), ("keyboard", "キーボード"), ("mouse", "マウス"), ("pc_parts", "PCパーツ"), ("pc_etc", "その他")],
+            "カメラ": [("digital_camera", "デジタルカメラ"), ("video_camera", "ビデオカメラ"), ("lens", "レンズ(単焦点)"), ("lens_zoom", "レンズ(ズーム)"), ("tripod", "三脚"), ("camera_etc", "その他")],
+            "生活家電": [("cleaner", "掃除機"), ("washing_machine", "洗濯機"), ("air_conditioner", "エアコン"), ("hair_dryer", "ヘアドライヤー"), ("appliance_etc", "その他")],
+            "オーディオ機器": [("headphone", "ヘッドホン"), ("earphone", "イヤホン"), ("speaker", "スピーカー"), ("amplifier", "アンプ"), ("audio_etc", "その他")],
+            "スポーツ": [("golf_club", "ゴルフ"), ("training_wear", "トレーニング/エクササイズ"), ("baseball_gear", "野球"), ("soccer_gear", "サッカー/フットサル"), ("sports_etc", "その他")],
+            "レジャー": [("camping_tent", "テント/タープ"), ("camping_table", "テーブル/チェア"), ("fishing_rod", "ロッド"), ("fishing_reel", "リール"), ("leisure_etc", "その他")],
+            "コスメ・香水・美容": [("base_makeup", "ベースメイク"), ("skin_care", "スキンケア/基礎化粧品"), ("perfume", "香水"), ("nail_care", "ネイルケア"), ("beauty_etc", "その他")],
+            "インテリア・住まい・小物": [("sofa", "ソファ/ソファベッド"), ("table", "机/テーブル"), ("chair", "椅子"), ("storage", "収納家具"), ("lighting", "ライト/照明"), ("kitchenware", "キッチン/食器"), ("rug", "ラグ/カーペット/マット"), ("interior_etc", "その他")],
         }
 
         # カテゴリオブジェクトをDBに保存しながら辞書で保持
@@ -152,19 +158,12 @@ class Command(BaseCommand):
         ]
 
         # 商品ステータスのマスタ定義
-        status_on_sale, _ = Status.objects.get_or_create(name='ON_SALE', display_name='販売中', purchasable=True)
-        status_sold_out, _ = Status.objects.get_or_create(name='SOLD_OUT', display_name='売却済', purchasable=False)
+        status_on_sale, _ = Status.objects.get_or_create(name='ON_SALE', display_name='販売中')
+        status_sold_out, _ = Status.objects.get_or_create(name='SOLD_OUT', display_name='売却済')
 
         # 取引ステータスのマスタ定義
         ts_waiting, _ = TransactionStatus.objects.get_or_create(name='WAITING_FOR_SHIPPING', display_name='発送待ち')
         ts_completed, _ = TransactionStatus.objects.get_or_create(name='COMPLETED', display_name='取引完了')
-
-        # ステータス遷移マスタを登録（例：販売中→売却済）
-        StatusTransition.objects.get_or_create(
-            from_status=status_on_sale,
-            to_status=status_sold_out,
-            defaults={'note': '販売中から売却済への遷移'}
-        )
 
         # ----------------------------------------------------------------
         # Step 3: ユーザーと住所の一括作成
@@ -206,6 +205,114 @@ class Command(BaseCommand):
         # 一括で住所を保存
         Address.objects.bulk_create(addresses_to_create)
         
+        # ----------------------------------------------------------------
+        # Step 4: 商品データを作成する
+        # ----------------------------------------------------------------
+        self.stdout.write(self.style.NOTICE(f'Creating {NUM_PRODUCTS} products...'))
+        
+        # まずはPythonのリストにProductオブジェクトをためていく。
+        # 一件ずつDBに保存すると、1000回のDBアクセスが発生して非常に遅くなるため。
+        products_to_create = []
+        
+        # 商品の出品者やカテゴリをランダムに選ぶための「母集団」をあらかじめ用意しておく。
+        # ループの中で毎回DBに問い合わせるのを防ぎ、パフォーマンスを向上させる。
+        user_pool = list(created_users)
+        category_keys = list(categories.keys())
+        condition_pool = list(Condition.objects.all())
+
+        for i in range(NUM_PRODUCTS):
+            # 母集団からランダムに一つ選ぶ
+            seller = random.choice(user_pool)
+            category_key = random.choice(category_keys)
+            category_obj = categories[category_key] # キーを使って、対応するCategoryオブジェクトを取得
+            
+            # Fakerを使って、それらしい商品名や説明文を生成する
+            product_name = f"【美品】{category_obj.name.split(' - ')[-1]} {fake.word()}"
+            description = fake.text(max_nb_chars=400)
+            
+            # Productモデルのインスタンス（Pythonオブジェクト）を作成する。まだDBには保存されない。
+            product = Product(
+                seller=seller, 
+                category=category_obj, 
+                condition=random.choice(condition_pool),
+                name=product_name, 
+                description=description, 
+                price=random.randint(1000, 30000)
+            )
+            
+            # 定義した割合に基づいて、商品を「売却済」か「販売中」に振り分ける
+            if i < NUM_PRODUCTS * SOLD_RATIO:
+                product.status = status_sold_out
+            else:
+                product.status = status_on_sale
+            
+            # 作成したProductオブジェクトをリストに追加
+            products_to_create.append(product)
+        
+        # ループでためた1000件の商品オブジェクトを、1回のDBアクセスでまとめて作成する。
+        # これが `bulk_create` の最も重要な使い方。
+        with transaction.atomic():
+            Product.objects.bulk_create(products_to_create)
+
+        # ----------------------------------------------------------------
+        # Step 5: 商品に画像を紐付ける (一件ずつ保存する修正版)
+        # ----------------------------------------------------------------
+        self.stdout.write(self.style.NOTICE('Attaching images to products...'))
+
+        from pathlib import Path
+
+        all_products = list(Product.objects.select_related('category'))
+        image_base_dir = Path(settings.MEDIA_ROOT) / 'images'
+        default_image_path = image_base_dir / 'no-image.png'
+        product_image_base_dir = Path(settings.MEDIA_ROOT) / 'products'
+
+        # カテゴリごとの画像ファイル一覧を作成
+        category_image_map = {}
+        for category_key in categories.keys():
+            category_dir = image_base_dir / category_key
+            if category_dir.exists() and category_dir.is_dir():
+                image_files = list(category_dir.glob(f'{category_key}_*.jpg'))
+                if image_files:
+                    category_image_map[category_key] = image_files
+
+        # デフォルト画像が存在するか確認
+        if not default_image_path.exists():
+            self.stdout.write(self.style.ERROR(f"'no-image.png' not found in {image_base_dir}. Aborting."))
+            return
+
+        image_count = 0
+        with transaction.atomic():
+            for product in all_products:
+                # カテゴリキーを特定
+                category_key = next((key for key, val in categories.items() if val == product.category), None)
+
+                # 対象カテゴリに画像があれば使う
+                image_paths = category_image_map.get(category_key, [default_image_path])
+                selected_images = random.sample(image_paths, k=min(len(image_paths), random.randint(1, 3)))
+
+                # 保存先ディレクトリ
+                save_dir = product_image_base_dir / category_key
+                save_dir.mkdir(parents=True, exist_ok=True)
+
+                for i, image_path in enumerate(selected_images, start=1):
+                    image_obj = ProductImage(product=product)
+
+                    # ファイル名生成（例: 123_1.jpg）
+                    _, ext = os.path.splitext(image_path.name)
+                    new_filename = f"{product.id}_{i}{ext}"
+                    new_save_path = save_dir / new_filename
+
+                    # 画像ファイルを読み取り、保存
+                    with open(image_path, 'rb') as f:
+                        django_file = File(f)
+                        # save=True でDBとファイル両方に保存
+                        image_obj.image.save(str(Path(category_key) / new_filename), django_file, save=True)
+
+                    image_count += 1
+
+        self.stdout.write(self.style.SUCCESS(f'-> Successfully created and attached {image_count} images.'))
+
+
         # ----------------------------------------------------------------
         # Step 6: 取引データを作成する（売却済み商品に対してのみ）
         # ----------------------------------------------------------------
@@ -259,14 +366,10 @@ class Command(BaseCommand):
         comments_to_create = []  # 一括作成用のコメントオブジェクトリスト
 
         # 全商品のうち、指定した割合の商品のみにコメントを付ける
-        # products_to_comment = random.sample(
-        #     list(Product.objects.all()),
-        #     k=int(NUM_PRODUCTS * COMMENT_RATIO)
-        # )
-
-        all_products = list(Product.objects.all())
-        sample_size = min(len(all_products), int(NUM_PRODUCTS * COMMENT_RATIO))  # ← 最大数に制限
-        products_to_comment = random.sample(all_products, k=sample_size)
+        products_to_comment = random.sample(
+            list(Product.objects.all()),
+            k=int(NUM_PRODUCTS * COMMENT_RATIO)
+        )
 
         for product in products_to_comment:
             # その商品に付けるコメント数をランダムで決定（1～5件）
