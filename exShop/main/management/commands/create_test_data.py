@@ -162,7 +162,11 @@ class Command(BaseCommand):
         status_sold_out, _ = Status.objects.get_or_create(name='SOLD_OUT', display_name='売却済')
 
         # 取引ステータスのマスタ定義
-        ts_waiting, _ = TransactionStatus.objects.get_or_create(name='WAITING_FOR_SHIPPING', display_name='発送待ち')
+        ts_waiting, _ = TransactionStatus.objects.get_or_create(name='WAITING_SHIPPING', display_name='発送待ち')
+        ts_shipped, _ = TransactionStatus.objects.get_or_create(name='SHIPPED', display_name='発送済み')
+        ts_transit, _ = TransactionStatus.objects.get_or_create(name='IN_TRANSIT', display_name='輸送中')
+        ts_deliver, _ = TransactionStatus.objects.get_or_create(name='OUT_FOR_DELIVERY', display_name='配達中')
+        ts_delivered, _ = TransactionStatus.objects.get_or_create(name='DELIVERED', display_name='配達済み')
         ts_completed, _ = TransactionStatus.objects.get_or_create(name='COMPLETED', display_name='取引完了')
 
         # ----------------------------------------------------------------
@@ -343,7 +347,7 @@ class Command(BaseCommand):
                 Transaction(
                     product=prod,
                     buyer=buyer,
-                    status=random.choice([ts_waiting, ts_completed]),  # 取引ステータスをランダムに設定
+                    status=random.choice([ts_waiting,ts_shipped,ts_transit,ts_deliver,ts_delivered,ts_completed]),  # 取引ステータスをランダムに設定
                     shipping_address=buyer_address,
                     purchase_price=prod.price,                         # 購入価格
                     platform_fee=int(prod.price * 0.1),               # プラットフォーム手数料（10%）

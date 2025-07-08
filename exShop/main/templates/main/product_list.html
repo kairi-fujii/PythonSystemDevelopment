@@ -1,12 +1,14 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "base.html" %}  {# 共通レイアウト base.html を継承する #}
+{% load static %}  {# staticファイル（画像など）を使うためのロード #}
+{% load humanize %}  {# humanize フィルターをロード（価格のカンマ区切りなど） #}
 
+{% block title %}商品一覧{% endblock %}  {# タイトルを設定 #}
 {% block content %}
 <!-- ヘッダー（上下パディングを小さく、マージン削除） -->
 <header class="bg-dark py-2">
     <div class="container-sm px-3">
         <div class="text-center text-white">
-            <h1 class="h3 fw-bold">Ama-zoo にようこそ</h1>
+            <h1 class="h3 fw-bold">メリカリ にようこそ</h1>
             <form method="get" action="." class="d-flex flex-column align-items-center mt-2">
                 <input type="text" class="form-control w-75" name="q" placeholder="検索キーワード" value="{{ request.GET.q }}">
                 <button type="submit" class="btn btn-primary mt-2">検索</button>
@@ -31,7 +33,7 @@
                     {% if product.images.all %}
                         <img class="card-img-top" src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                     {% else %}
-                        <img class="card-img-top" src="{% static 'img/no_image.png' %}" alt="画像なし">
+                        <img class="card-img-top" src="{% static 'images/no-image.png' %}" alt="画像なし">
                     {% endif %}
                     
                     <!-- 商品情報 -->
@@ -41,14 +43,22 @@
                             {% if product.original_price and product.original_price > product.price %}
                                 <div><span class="text-muted text-decoration-line-through">¥{{ product.original_price }}</span></div>
                             {% endif %}
-                            <div>¥{{ product.price }}</div>
+                            <div>¥{{ product.price|intcomma }}</div>
                         </div>
                     </div>
                     
                     <!-- 詳細リンク -->
                     <div class="card-footer p-3 pt-0 border-top-0 bg-transparent">
                         <div class="text-center">
-                            <a class="btn btn-sm btn-outline-dark" href="{% url 'main:product_detail' product.id %}">詳細</a>
+                            {% if product.status.purchasable %}
+                                <span class="badge bg-success">購入可能</span>
+                            {% else %}
+                                <span class="badge bg-secondary">売り切れ</span>
+                            {% endif %}
+                            <a class="btn btn-sm btn-outline-dark"
+                            href="{% url 'main:product_detail' product.id %}?q={{ request.GET.q }}&page={{ page_obj.number }}">
+                            詳細
+                            </a>
                         </div>
                     </div>
                 </div>

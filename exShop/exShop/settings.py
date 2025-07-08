@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django.contrib.humanize',  # 人間に読みやすい形式で日付や数値を表示するためのアプリ
+
     # ここにアプリを追加
     'main.apps.MainConfig',
     'accounts.apps.AccountsConfig',
@@ -103,6 +105,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+# 人間に読みやすい形式で数値を表示するための設定
+# 数値のグループ化の桁数を3に設定（例: 1,000,000）
+NUMBER_GROUPING=3
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

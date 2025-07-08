@@ -130,6 +130,11 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',  # プロジェクトの静的ファイルディレクトリ
 ]
 
+----- 画像、CSS、JSを参照できるようにする：<プロジェクト名>/urls.py -----------
+# 開発環境（DEBUG=True）でのみメディアファイルにアクセスできるようにする設定
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 exShop/
 ├── accounts/
 ├── main/

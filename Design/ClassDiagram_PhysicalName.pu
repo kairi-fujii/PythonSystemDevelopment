@@ -1,4 +1,4 @@
-@startuml Django_Physical_Model_Updated
+@startuml Django_Physical_Model
 
 ' === Style Settings ===
 skinparam {
@@ -62,6 +62,12 @@ package "main" {
     class TransactionStatus {
         + name : CharField
         + display_name : CharField
+    }
+
+    class TransactionStatusTransition {
+        + from_status : ForeignKey -> TransactionStatus
+        + to_status : ForeignKey -> TransactionStatus
+        + note : CharField
     }
 
     class NtfType {
@@ -160,5 +166,9 @@ NtfType "1" -[#008000,thickness=1]- "0..*" Notification
 ' Status transition
 Status "1" -[#005500,thickness=1]- "*" StatusTransition : from_status
 Status "1" -[#005500,thickness=1]- "*" StatusTransition : to_status
+
+TransactionStatus "1" -[#005500,thickness=1]- "*" TransactionStatusTransition : from_status
+TransactionStatus "1" -[#005500,thickness=1]- "*" TransactionStatusTransition : to_status
+
 
 @enduml

@@ -1,7 +1,11 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.views.generic import ListView
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from main.models import *
+from accounts.models import *
 
 
 # ========================================
@@ -31,24 +35,74 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         queryset = Product.objects.all().order_by('-created_at')
-        query = self.request.GET.get('q')
+        query = self.request.GET.get('q', '')
 
         if query:
-            # 商品名、説明、カテゴリ名に icontains でフィルタをかける（Q未使用）
+            # 商品名、説明、カテゴリ名に icontains でフィルタをかける
+            # icontains：指定した文字列を含んでいる場合(大文字小文字を区別しない)
+            # ここでは、商品名、説明、カテゴリ名のいずれかにクエリが含まれる商品を検索
             # 各条件を別々にフィルタしてから結合
             name_matches = Product.objects.filter(name__icontains=query)
             description_matches = Product.objects.filter(description__icontains=query)
             category_matches = Product.objects.filter(category__name__icontains=query)
-
             # 各クエリセットを結合し、重複を排除
             queryset = (name_matches | description_matches | category_matches).distinct()
 
         return queryset
 
-class ProductDetailView(TemplateView):
-    # 商品の詳細情報を表示するテンプレートを描画
-    # 商品画像、説明、出品者情報に加えて、コメント（質問）も本画面に統合して表示する
+    def get_context_data(self, **kwargs):
+        # 基本のコンテキストを取得
+        context = super().get_context_data(**kwargs)
+        # テンプレートに検索語を渡し、検索フォームに反映させる
+        context['search_query'] = self.request.GET.get('q', '')
+
+        return context
+
+# class ProductDetailView(TemplateView):
+#     # 商品の詳細情報を表示するテンプレートを描画
+#     # 商品画像、説明、出品者情報に加えて、コメント（質問）も本画面に統合して表示する
+#     template_name = 'main/product_detail.html'
+
+# 商品の詳細を表示するビュークラス（CBV）
+class ProductDetailView(DetailView):
+    # 使用するモデルを指定（Product モデルの情報を表示する）
+    model = Product
+    # 使用するテンプレートファイルのパスを指定（templates/main/product_detail.html）
     template_name = 'main/product_detail.html'
+    # テンプレート内で使うオブジェクトの変数名を定義（デフォルトは「object」だが、「product」として扱えるように変更）
+    context_object_name = 'product'
+
+    def get_context_data(self, **kwargs):
+        # DetailViewのget_context_dataを呼び出し、既存のコンテキストを取得
+        context = super().get_context_data(**kwargs)
+        # 表示対象の商品（このビューで取得される Product オブジェクト）を取得
+        product = self.object
+        # クエリパラメータから検索語を取得。存在しなければ空文字列を設定。
+        context['search_query'] = self.request.GET.get('q', '')
+        # クエリパラメータからページ番号を取得。存在しなければ空文字列を設定。
+        context['page'] = self.request.GET.get('page', '')
+        # 商品に紐づくコメントを作成日時の降順で取得して渡す
+        context['comments'] = self.object.comments.select_related('user').order_by('-created_at')
+
+
+        # --- おすすめ商品の取得（同じ出品者による他の商品）---
+        # 今表示している商品と同じ seller（出品者）による他の商品を最大4件取得
+        # 現在表示中の商品は除外する（exclude）
+        context['related_by_seller'] = Product.objects.filter(
+            seller=product.seller
+        ).exclude(id=product.id)
+
+        # --- おすすめ商品の取得（同じカテゴリの商品）---
+        # 今表示している商品と同じカテゴリに属する他の商品を最大4件取得
+        # 現在の商品を除外し、カテゴリが設定されている場合のみフィルタする
+        if product.category:  # カテゴリが null の可能性もあるためチェック
+            context['related_by_category'] = Product.objects.filter(
+                category=product.category
+            ).exclude(id=product.id)
+        else:
+            context['related_by_category'] = Product.objects.none()  # カテゴリが無ければ空のクエリセット
+
+        return context
 
 class ProductCreateView(TemplateView):
     # 新しい商品を出品（登録）するための画面
@@ -60,21 +114,108 @@ class MyProductManageView(TemplateView):
     # 商品ごとの編集・削除・ステータス変更ボタンを用意予定
     template_name = 'main/my_product_manage.html'
 
-
 # ================================
 # 取引関連の画面ビュー
 # ================================
 
+# class PurchaseConfirmView(TemplateView):
+#     # 購入を確定する前に、商品の詳細と購入条件を確認する画面
+#     # 商品名、価格、出品者情報、購入ボタンなどを表示予定
+#     # 「購入する」ボタン押下で、実際の購入処理が行われ、取引画面へ遷移する
+#     template_name = 'main/purchase_confirm.html'
+
+class PurchaseConfirmView(LoginRequiredMixin, TemplateView):
+    # 使用するテンプレートファイルの指定
+    template_name = 'main/purchase_confirm.html'
+
+    def get_context_data(self, **kwargs):
+        """
+        GETリクエスト時にテンプレートに渡すコンテキストを準備。
+        URLから商品IDを取得し、該当商品をDBから取得して渡す。
+        商品がなければエラーメッセージをセット。
+        """
+        # 親クラスのコンテキストを取得
+        context = super().get_context_data(**kwargs)
+
+        # URLパラメータから product_id を取得
+        product_id = self.kwargs.get('product_id')
+
+        # 該当商品の取得。なければ None
+        product = Product.objects.filter(pk=product_id).first()
+
+        if not product:
+            # 商品が見つからなければテンプレートでエラー表示が可能に
+            context['error'] = '指定された商品が見つかりません。'
+            return context
+
+        # 商品情報をテンプレートに渡す
+        context['product'] = product
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """
+        POSTリクエスト時に購入処理を実行。
+        ・URLから商品IDを取得して商品を取得
+        ・商品が存在し購入可能なら取引を作成
+        ・商品の販売状況は遷移ルールに従って更新
+        ・購入者の配送先住所を取得し、なければ住所登録画面へ誘導
+        ・取引詳細画面へリダイレクト
+        """
+        # URLパラメータから product_id を取得
+        product_id = self.kwargs.get('product_id')
+
+        # 商品をDBから取得
+        product = Product.objects.filter(pk=product_id).first()
+        if not product:
+            # 商品がない場合は商品一覧に戻す
+            return redirect('main:product_list')
+
+        # 購入可能かどうかチェック（purchasable フラグを確認）
+        if not product.status.purchasable:
+            # 購入不可の場合は商品詳細画面に戻す
+            return redirect('main:product_detail', pk=product.id)
+
+        # 取引状況の初期状態を取得（例: "WAITING_FOR_SHIPPING" という名前で登録してあるもの）
+        initial_transaction_status = TransactionStatus.objects.filter(name='WAITING_FOR_SHIPPING').first()
+
+        # ログインユーザーの配送先住所を取得（複数ある場合は最初のものを利用）
+        shipping_address = Address.objects.filter(user=request.user).first()
+        if not shipping_address:
+            # 配送先住所が未登録なら住所登録画面へリダイレクト
+            return redirect('accounts:address_register')
+
+        # 取引を新規作成
+        transaction = Transaction.objects.create(
+            product=product,               # 購入対象の商品
+            buyer=request.user,            # 購入者は現在ログイン中のユーザー
+            status=initial_transaction_status,  # 取引状況は初期状態に設定
+            shipping_address=shipping_address,  # 配送先住所
+            purchase_price=product.price,  # 購入価格は商品価格
+            platform_fee=0,                # 手数料は一旦0（必要に応じて計算処理を追加）
+            seller_income=product.price,  # 出品者利益は商品価格と同じ（必要に応じて調整）
+        )
+
+        # 販売状況遷移マスタから、現在の販売状況から遷移可能な次の販売状況を1件取得
+        transition = StatusTransition.objects.filter(from_status=product.status).first()
+        if transition:
+            # 次のステータスに更新
+            product.status = transition.to_status
+            product.save()
+
+        # 作成した取引の詳細画面へリダイレクト
+        return redirect('main:transaction_detail', pk=transaction.pk)
+
+
 class TransactionListView(TemplateView):
     # ユーザーが関わる取引（購入・販売）の一覧画面
-    # 商品名、価格、相手ユーザー、取引ステータス、日付などを表示
+    # 商品名、価格、相手ユーザー、取引ステータス、日付などを表示予定
     template_name = 'main/transaction_list.html'
+
 
 class TransactionDetailView(TemplateView):
     # 特定の取引に関する詳細情報を表示する画面
     # 発送先、メッセージ履歴、レビュー投稿フォームなどを配置予定
     template_name = 'main/transaction_detail.html'
-
 
 # ================================
 # インタラクション関連の画面ビュー

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings # settings.AUTH_USER_MODEL を参照するため
+from django.core.exceptions import ValidationError
 
 # ===================================
 # マスタテーブル
@@ -52,7 +53,71 @@ class TransactionStatus(models.Model):
 
     def __str__(self):
         return self.display_name
+    
+class TransactionStatusTransition(models.Model):
+    """
+    取引状況遷移マスタ
 
+    ・取引のステータスがどのように遷移可能かを定義するマスタテーブル
+    ・from_status が null の場合は「初期ステータス」として扱う
+    ・from_status が null の遷移は 1件のみ許容する
+    """
+
+    # 遷移元ステータス（null許容: 初期ステータスとして使用される可能性あり）
+    from_status = models.ForeignKey(
+        'TransactionStatus',
+        on_delete=models.CASCADE,
+        related_name='transitions_from',
+        verbose_name='遷移前ステータス',
+        null=True,   # 初期遷移など、遷移元が存在しないケースを許容
+        blank=True   # 管理画面などで空欄入力を許可
+    )
+
+    # 遷移先ステータス（null禁止）
+    to_status = models.ForeignKey(
+        'TransactionStatus',
+        on_delete=models.CASCADE,
+        related_name='transitions_to',
+        verbose_name='遷移後ステータス'
+    )
+
+    # 備考欄（自由記述）
+    note = models.CharField(
+        "備考",
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = '取引状況遷移'
+        verbose_name_plural = '取引状況遷移マスタ'
+
+        # from_status に一意制約を与えることで、同じ遷移元から複数の遷移を禁止
+        constraints = [
+            models.UniqueConstraint(
+                fields=['from_status'],
+                name='unique_from_status_only_one_transition'
+            )
+        ]
+
+    def __str__(self):
+        # 表示形式: 「支払い待ち → 発送待ち」
+        from_name = self.from_status.display_name if self.from_status else "（初期）"
+        return f"{from_name} → {self.to_status.display_name}"
+
+    def clean(self):
+        """
+        バリデーション処理（save() 時に呼び出される）
+        ・from_status が null（初期状態）の遷移が 2件以上存在しないよう制御
+        """
+        super().clean()
+        if self.from_status is None:
+            # 自分以外に from_status = None のレコードが存在するか確認
+            exists = TransactionStatusTransition.objects.filter(from_status__isnull=True).exclude(pk=self.pk).exists()
+            if exists:
+                raise ValidationError("初期ステータスの遷移は1件のみ登録可能です。")
+            
 class NtfType(models.Model):
     """通知種別マスタ"""
     name = models.CharField("種別名（内部用）", max_length=50, unique=True)

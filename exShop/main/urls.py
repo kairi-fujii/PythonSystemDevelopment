@@ -18,6 +18,9 @@ urlpatterns = [
     path('products/manage/', MyProductManageView.as_view(), name='my_product_manage'),
 
     # 取引関連
+    # path('products/<int:pk>/purchase/confirm/', PurchaseConfirmView.as_view(), name='purchase_confirm'),
+    path('products/<int:product_id>/purchase/confirm/', PurchaseConfirmView.as_view(), name='purchase_confirm'),
+
     path('transactions/', TransactionListView.as_view(), name='transaction_list'),
     path('transactions/<int:pk>/', TransactionDetailView.as_view(), name='transaction_detail'),
 

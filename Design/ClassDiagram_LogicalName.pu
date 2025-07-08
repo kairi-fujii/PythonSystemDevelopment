@@ -36,15 +36,20 @@ class 販売状況 {
     + 表示名 : CharField
     + 購入可能 : BooleanField
 }
+class 販売状況遷移 {
+    + 遷移元 : ForeignKey(販売状況)
+    + 遷移先 : ForeignKey(販売状況)
+    + 備考 : CharField
+}
 
 class 取引状況 {
     + 名前 : CharField
     + 表示名 : CharField
 }
 
-class 販売状況遷移 {
-    + 遷移元 : ForeignKey(販売状況)
-    + 遷移先 : ForeignKey(販売状況)
+class 取引状況遷移 {
+    + 遷移元 : ForeignKey(取引状況)
+    + 遷移先 : ForeignKey(取引状況)
     + 備考 : CharField
 }
 
@@ -150,5 +155,8 @@ AbstractUser <|-- ユーザー
 
 販売状況 "1" -[#005500,thickness=1]- "*" 販売状況遷移 : 遷移元
 販売状況 "1" -[#005500,thickness=1]- "*" 販売状況遷移 : 遷移先
+
+取引状況 "1" -[#005500,thickness=1]- "*" 取引状況遷移 : 遷移元
+取引状況 "1" -[#005500,thickness=1]- "*" 取引状況遷移 : 遷移先
 
 @enduml

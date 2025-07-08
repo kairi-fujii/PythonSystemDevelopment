@@ -4,11 +4,7 @@
 from django.contrib import admin
 
 # このアプリケーションで使用しているモデル群をインポート
-from .models import (
-    Category, Condition, Status, TransactionStatus, NtfType,  # 各種マスタモデル
-    Product, ProductImage, Transaction, Comment, Favorite,StatusTransition,     # メイン機能に関するモデル
-    Message, Review, Notification                              # インタラクション系モデル
-)
+from .models import *
 
 # ===============================================================
 # 商品画像を商品管理画面に埋め込んで登録・編集できるようにする
@@ -101,6 +97,22 @@ class StatusTransitionAdmin(admin.ModelAdmin):
     list_filter = ('from_status', 'to_status',)   # 絞り込み項目
     search_fields = ('from_status__display_name', 'to_status__display_name')  # 検索用項目
     autocomplete_fields = ['from_status', 'to_status']  # ステータスを検索型にする（選択肢多い時の対策）
+
+# ===============================================================
+# 取引状況遷移マスタの管理画面
+# 各取引ステータスの「遷移元」→「遷移先」のルールを管理する
+# ===============================================================
+@admin.register(TransactionStatusTransition)
+class TransactionStatusTransitionAdmin(admin.ModelAdmin):
+    # 取引状況遷移マスタの管理画面設定
+    list_display = ('id', 'from_status_display', 'to_status', 'note')
+    list_filter = ('from_status', 'to_status')
+    search_fields = ('note',)
+
+    def from_status_display(self, obj):
+        # nullの場合は「初期」と表示
+        return obj.from_status.display_name if obj.from_status else "（初期）"
+    from_status_display.short_description = "遷移前ステータス"
 
 
 # ===============================================================
