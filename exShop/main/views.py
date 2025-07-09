@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from main.utils.transaction import get_ordered_transaction_statuses
 from main.models import *
 from accounts.models import *
 
@@ -206,16 +207,61 @@ class PurchaseConfirmView(LoginRequiredMixin, TemplateView):
         return redirect('main:transaction_detail', pk=transaction.pk)
 
 
-class TransactionListView(TemplateView):
-    # ユーザーが関わる取引（購入・販売）の一覧画面
-    # 商品名、価格、相手ユーザー、取引ステータス、日付などを表示予定
+# class TransactionListView(TemplateView):
+#     # ユーザーが関わる取引（購入・販売）の一覧画面
+#     # 商品名、価格、相手ユーザー、取引ステータス、日付などを表示予定
+#     template_name = 'main/transaction_list.html'
+
+class TransactionListView(LoginRequiredMixin, TemplateView):
+    # 使用するテンプレートファイルの指定
     template_name = 'main/transaction_list.html'
 
+    def get_context_data(self, **kwargs):
+        # 親クラスから基本のコンテキストを取得
+        context = super().get_context_data(**kwargs)
 
-class TransactionDetailView(TemplateView):
-    # 特定の取引に関する詳細情報を表示する画面
-    # 発送先、メッセージ履歴、レビュー投稿フォームなどを配置予定
-    template_name = 'main/transaction_detail.html'
+        # ログインユーザーが購入者または出品者として関わる取引を取得
+        transactions = Transaction.objects.select_related(
+            'product', 'buyer', 'status'
+        ).filter(
+            buyer=self.request.user
+        ).order_by('-created_at')
+
+        # コンテキストに取引一覧を追加
+        context['transactions'] = transactions
+        return context
+
+# class TransactionDetailView(TemplateView):
+#     # 特定の取引に関する詳細情報を表示する画面
+#     # 発送先、メッセージ履歴、レビュー投稿フォームなどを配置予定
+#     template_name = 'main/transaction_detail.html'
+
+class TransactionDetailView(LoginRequiredMixin, DetailView):
+    model = Transaction  # 操作対象のモデル
+    template_name = 'main/transaction_detail.html'  # 使用テンプレート
+    context_object_name = 'transaction'  # テンプレートで使うオブジェクト名
+
+    def get_queryset(self):
+        # 現在のログインユーザーの取引のみを対象とする
+        return Transaction.objects.select_related(
+            'product', 'buyer', 'status', 'shipping_address'
+        ).filter(buyer=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        # 親クラスのコンテキスト取得
+        context = super().get_context_data(**kwargs)
+
+        # 商品情報・画像を追加
+        transaction = self.object
+        context['product'] = transaction.product
+        context['images'] = transaction.product.images.all()
+
+        # ステータス表示用の情報を追加
+        status_list = get_ordered_transaction_statuses()
+        context['status_list'] = status_list
+        context['current_status_id'] = transaction.status.id
+
+        return context
 
 # ================================
 # インタラクション関連の画面ビュー

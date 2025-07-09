@@ -1,8 +1,79 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static humanize %}
 
 {% block content %}
-    <div class="mb-4">
-        <h1>取引の詳細（購入者・出品者間のやり取りや進行状況）を表示</h1>
-        <p>配送先やステータスの変更なども扱う想定</p>
+<div class="container">
+    <h2>取引詳細</h2>
+
+    {% if transaction %}
+    <div class="row">
+        <!-- 商品画像表示 -->
+        <div class="col-md-6">
+            {% if images %}
+                <div id="carouselImages" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="d-block w-100" alt="商品画像">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+            {% else %}
+                <p>画像は登録されていません。</p>
+            {% endif %}
+        </div>
+
+        <!-- 商品詳細と取引情報 -->
+        <div class="col-md-6">
+            <h3>{{ product.name }}</h3>
+            <p><strong>価格:</strong> ¥{{ transaction.purchase_price|intcomma }}</p>
+            <p><strong>出品者:</strong> {{ product.seller.username }}</p>
+            <p><strong>購入者:</strong> {{ transaction.buyer.username }}</p>
+            <hr>
+            <h5>配送先情報</h5>
+            <p>{{ transaction.shipping_address.postal_code }}<br>
+               {{ transaction.shipping_address.prefecture }}{{ transaction.shipping_address.city }}{{ transaction.shipping_address.street_address }}<br>
+               {{ transaction.shipping_address.recipient_name }} 様</p>
+        </div>
     </div>
+
+    <hr>
+    <p><strong>取引ステータス:</strong>
+        <div class="status-progress d-flex gap-3 flex-wrap">
+            {% for status in status_list %}
+                <div class="step {% if status.id == current_status_id %}active{% endif %}">
+                {{ status.display_name }}
+                </div>
+            {% endfor %}
+        </div>
+    </p>
+    <!-- 取引一覧に戻るボタン -->
+    <a href="{% url 'main:transaction_list' %}" class="btn btn-secondary mt-3">
+        取引一覧に戻る
+    </a>
+
+    <style>
+    .step {
+    padding: 8px 16px;
+    background-color: #eee;
+    border-radius: 5px;
+    font-weight: bold;
+    }
+    .step.active {
+    background-color: #4caf50;
+    color: white;
+    }
+    </style>
+
+    {% else %}
+        <div class="alert alert-danger">取引情報が見つかりません。</div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -190,7 +190,8 @@ class Command(BaseCommand):
         CustomUser.objects.bulk_create(users_to_create)
 
         # 作成されたユーザーを取得して、住所登録に利用
-        created_users = list(CustomUser.objects.filter(is_superuser=False).order_by('id'))
+        # created_users = list(CustomUser.objects.filter(is_superuser=False).order_by('id'))
+        created_users = list(CustomUser.objects.order_by('id'))
 
         # 各ユーザーの住所情報をリストでまとめて作成
         addresses_to_create = []

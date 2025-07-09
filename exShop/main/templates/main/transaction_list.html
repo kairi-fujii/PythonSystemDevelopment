@@ -1,8 +1,43 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
 
 {% block content %}
-    <div class="mb-4">
-        <h1>購入履歴や売上履歴などの一覧を表示する画面</h1>
-        <p>商品名・価格・取引状況・日付などの情報を含む予定</p>
-    </div>
+<div class="container mt-4">
+    <h2>購入した取引一覧</h2>
+
+    {% if transactions %}
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>商品名</th>
+                    <th>価格</th>
+                    <th>出品者</th>
+                    <th>取引状況</th>
+                    <th>購入日</th>
+                    <th>詳細</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.product.name }}</td>
+                        <td>¥{{ transaction.purchase_price|intcomma }}</td>
+                        <td>{{ transaction.product.seller.username }}</td>
+                        <td>{{ transaction.status.display_name }}</td>
+                        <td>{{ transaction.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <a href="{% url 'main:transaction_detail' transaction.pk %}" class="btn btn-sm btn-outline-primary">
+                                表示
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>購入した取引がまだありません。</p>
+    {% endif %}
+</div>
 {% endblock %}
