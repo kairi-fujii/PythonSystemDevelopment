@@ -1,8 +1,28 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <div class="mb-4">
-        <h1>新しい商品を出品（登録）するためのフォーム画面</h1>
-        <p>カテゴリ・画像アップロード・価格設定などを扱う。</p>
-    </div>
+<div class="container mt-5">
+    <h2>商品を出品する</h2>
+
+    <!-- フォーム送信のためのフォーム開始タグ -->
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- 商品情報の入力フォーム -->
+        {{ form.as_p }}
+
+        <h4>商品画像</h4>
+        <!-- 画像フォームセットの管理フォーム（hidden input 含む） -->
+        {{ formset.management_form }}
+
+        <!-- 画像アップロードフィールドを繰り返し表示 -->
+        {% for form in formset.forms %}
+            {{ form.as_p }}
+        {% endfor %}
+
+        <!-- 登録ボタン -->
+        <button type="submit" class="btn btn-primary">登録</button>
+    </form>
+</div>
 {% endblock %}

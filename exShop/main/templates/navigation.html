@@ -16,7 +16,7 @@
                 <!-- ログイン中かどうか判断してメニューとログインメッセージが切り替わる -->
                 {% if user.is_authenticated %}
                     <p class="text-white font-weight-bold px-3 py-2 text-center mb-0" style="font-size: 16px;">
-                        <a href="" class="text-white text-decoration-none">menue1</a>
+                        <a href="" class="text-white text-decoration-none">{{ user.username }}</a>
                     </p>
                     
                 {% else %}

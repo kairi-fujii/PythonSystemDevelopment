@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>商品を削除</h2>
+    <p>「{{ object.name }}」を本当に削除しますか？</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">削除する</button>
+        <a href="{% url 'main:my_product_manage' %}" class="btn btn-secondary">キャンセル</a>
+    </form>
+</div>
+{% endblock %}

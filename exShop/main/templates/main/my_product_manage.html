@@ -1,8 +1,57 @@
 {% extends 'base.html' %}
+{% load static humanize %}
 
 {% block content %}
-    <div class="mb-4">
-        <h1>自身が出品した商品を一覧・編集・削除するための管理画面</h1>
-        <p>商品の在庫状況や編集ボタンなどを表示する想定</p>
+<div class="container mt-4">
+    <h2>商品管理</h2>
+
+    <div class="mb-3 text-end">
+        <a href="{% url 'main:product_create' %}" class="btn btn-success">商品を登録</a>
     </div>
+
+    {% if products %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for product in products %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if product.images.all %}
+                            <img src="{{ product.images.all.0.image.url }}" class="card-img-top" alt="商品画像">
+                        {% else %}
+                            <img src="{% static 'images/no-image.png' %}" class="card-img-top" alt="画像なし">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">価格: ¥{{ product.price|intcomma }}</p>
+                            <p class="card-text">状態: {{ product.condition.name }}</p>
+                            <p class="card-text">販売状況: {{ product.status.display_name }}</p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <a href="{% url 'main:product_edit' product.id %}" class="btn btn-outline-primary btn-sm">編集</a>
+                            <a href="{% url 'main:product_delete' product.id %}" class="btn btn-outline-danger btn-sm">削除</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ページネーション -->
+        <div class="mt-4 text-center">
+            {% if is_paginated %}
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">« 最初</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹ 前</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">次 ›</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後 »</a></li>
+                    {% endif %}
+                </ul>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>登録された商品がありません。</p>
+    {% endif %}
+</div>
 {% endblock %}

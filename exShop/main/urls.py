@@ -16,6 +16,8 @@ urlpatterns = [
     path('products/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
     path('products/create/', ProductCreateView.as_view(), name='product_create'),
     path('products/manage/', MyProductManageView.as_view(), name='my_product_manage'),
+    path('products/<int:pk>/edit/', ProductEditView.as_view(), name='product_edit'),
+    path('products/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
 
     # 取引関連
     # path('products/<int:pk>/purchase/confirm/', PurchaseConfirmView.as_view(), name='purchase_confirm'),

@@ -1,10 +1,15 @@
+from django.urls import reverse_lazy
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.views.generic import DetailView
+from django.views.generic.edit import UpdateView, DeleteView
+from django.views.generic.edit import CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 from main.utils.transaction import get_ordered_transaction_statuses
+from .forms import *
 from main.models import *
 from accounts.models import *
 
@@ -105,16 +110,107 @@ class ProductDetailView(DetailView):
 
         return context
 
-class ProductCreateView(TemplateView):
-    # 新しい商品を出品（登録）するための画面
-    # カテゴリ選択、状態、価格、説明、画像アップロード等の項目を含む予定
+# class ProductCreateView(TemplateView):
+#     # 新しい商品を出品（登録）するための画面
+#     # カテゴリ選択、状態、価格、説明、画像アップロード等の項目を含む予定
+#     template_name = 'main/product_create.html'
+
+# 商品の新規登録（出品）を行うビュー
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    # 登録対象のモデル（Productモデル）
+    model = Product
+
+    # 使用するフォームクラス（ModelForm）
+    form_class = ProductForm
+
+    # 使用するテンプレートファイル
     template_name = 'main/product_create.html'
 
-class MyProductManageView(TemplateView):
-    # 自分が出品した商品の管理画面
-    # 商品ごとの編集・削除・ステータス変更ボタンを用意予定
-    template_name = 'main/my_product_manage.html'
+    # テンプレートに渡す追加のコンテキストを定義
+    def get_context_data(self, **kwargs):
+        # 親クラスのコンテキストを取得
+        context = super().get_context_data(**kwargs)
 
+        # POSTリクエスト時（フォーム送信時）は、ユーザーの送信データを含むフォームセットを作成
+        if self.request.POST:
+            context['formset'] = ProductImageFormSet(self.request.POST, self.request.FILES)
+        else:
+            # 初回表示時は空のフォームセットを表示（画像3枚分）
+            context['formset'] = ProductImageFormSet()
+
+        return context
+
+    # 商品フォームがバリデーションを通過した場合の処理
+    def form_valid(self, form):
+        # 出品者を現在ログイン中のユーザーに設定
+        form.instance.seller = self.request.user
+
+        # 初期の販売状況を取得（例：購入可能なステータス）
+        initial_status = Status.objects.filter(purchasable=True).first()
+
+        # 初期状態が取得できたら、商品に設定する
+        form.instance.status = initial_status
+
+        # 商品情報を保存して、インスタンスを取得
+        self.object = form.save()
+
+        # 商品画像フォームセットを作成し、バリデーションチェック
+        formset = ProductImageFormSet(self.request.POST, self.request.FILES, instance=self.object)
+
+        if formset.is_valid():
+            # 商品画像がすべて正しく入力されていれば保存
+            formset.save()
+            # 商品詳細画面へリダイレクト（仮にproduct_detailが存在する前提）
+            return redirect('main:product_detail', pk=self.object.pk)
+        else:
+            # フォームセットにエラーがある場合はテンプレート再表示
+            return self.render_to_response(self.get_context_data(form=form, formset=formset))
+        
+
+# class MyProductManageView(TemplateView):
+#     # 自分が出品した商品の管理画面
+#     # 商品ごとの編集・削除・ステータス変更ボタンを用意予定
+#     template_name = 'main/my_product_manage.html'
+
+class MyProductManageView(LoginRequiredMixin, ListView):
+    # ログイン中の出品者が登録した商品を一覧表示する管理画面用ビュー
+    
+    template_name = 'main/my_product_manage.html'  # 表示するテンプレート
+    context_object_name = 'products'  # テンプレート側で使う変数名
+    paginate_by = 10  # ページネーション件数
+
+    def get_queryset(self):
+        # ログインユーザーが出品した商品だけを取得
+        return Product.objects.filter(seller=self.request.user).select_related('status', 'category').prefetch_related('images').order_by('-created_at')
+
+class ProductEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    # 商品の編集画面ビュー（ログイン＋出品者本人のみ編集可）
+
+    model = Product
+    form_class = ProductForm  # 編集に使うフォーム
+    template_name = 'main/product_edit.html'
+
+    def get_success_url(self):
+        # 編集後は商品管理画面にリダイレクト
+        return reverse_lazy('main:my_product_manage')
+
+    def test_func(self):
+        # ログインユーザーがこの商品を出品した本人かどうかを確認
+        product = self.get_object()
+        return self.request.user == product.seller
+
+# 商品削除ビュー
+class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    # 商品の削除確認画面と削除処理
+    model = Product
+    template_name = 'main/product_confirm_delete.html'
+    success_url = reverse_lazy('main:my_product_manage')  # 削除成功時のリダイレクト先
+
+    def test_func(self):
+        # 出品者のみが削除可能
+        product = self.get_object()
+        return self.request.user == product.seller
+    
 # ================================
 # 取引関連の画面ビュー
 # ================================
